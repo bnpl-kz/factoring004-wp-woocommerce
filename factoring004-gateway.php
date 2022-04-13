@@ -19,9 +19,28 @@ function factoring004_add_gateway_class($gateways) {
     return $gateways;
 }
 
+/**
+ * Этот хук действия регистрирует функцию для работы с условиями отображения платежа
+ */
+
+add_filter('woocommerce_available_payment_gateways', 'disable_factoring004_above_6000_or_below_200000');
+
+function disable_factoring004_above_6000_or_below_200000($available_gateways)
+{
+    $minSum = 6000;
+    $maxSum = 200000;
+    if (WC()->cart->total < $minSum || WC()->cart->total > $maxSum) {
+        unset($available_gateways['factoring004']);
+    }
+    return $available_gateways;
+}
+
 add_action('plugins_loaded', 'factoring004_init_gateway_class');
 
-// Хук регистрации обработчика удаления файла
+/**
+ * Хук регистрации обработчика удаления файла
+ */
+
 add_action('wp_ajax_factoring004_agreement_destroy', 'callback');
 
 function callback()
@@ -38,7 +57,8 @@ function callback()
 function factoring004_init_gateway_class() {
 
 
-    class WC_Factoring004_Gateway extends WC_Payment_Gateway {
+    class WC_Factoring004_Gateway extends WC_Payment_Gateway
+    {
 
         private $zone_name = 'Казахстан';
 
@@ -77,8 +97,24 @@ function factoring004_init_gateway_class() {
 
             // Регистрация вебхука
             add_action('woocommerce_api_{webhook name}', array($this, 'webhook'));
+
+            // Регистрация вывода чекбокс оферты
+            if ($this->get_option('agreement_file')) {
+                add_action('woocommerce_review_order_before_submit', array($this,'bt_add_checkout_checkbox'),999);
+            }
         }
 
+        public function bt_add_checkout_checkbox()
+        {
+            $agreementLink = wp_upload_dir()['baseurl'] . '/' . $this->get_option('agreement_file');
+            woocommerce_form_field('checkout_factoring004_agreement', array(
+                'id'          => 'factoring004_checkbox_agreement',
+                'type'        => 'checkbox',
+                'class'       => array('factoring004-checkbox-agreement'),
+                'required'    => true,
+                'label'       => "Я ознакомлен и согласен с условиями <a href='$agreementLink' target='_blank' rel='noopener'>Рассрочка 0-0-4</a>",
+            ));
+        }
 
         public function process_admin_options()
         {
@@ -190,6 +226,7 @@ function factoring004_init_gateway_class() {
                                     <button class="button-primary" onclick="document.getElementById('woocommerce_factoring004_agreement_file').click()" type="button" id="factoring004-agreement-file-button">Выбрать файл</button>
                                     <input style="display: none;" type="file" name="woocommerce_factoring004_agreement_file" id="woocommerce_factoring004_agreement_file">
                                 </label>
+                                <p>Загрузите файл оферты, если вам необходимо его отобразить клиенту</p>
                             <?php endif; ?>
                             <br>
                         </fieldset>
@@ -245,13 +282,23 @@ function factoring004_init_gateway_class() {
          */
         public function payment_scripts()
         {
-            //
+            wp_enqueue_script(
+                'woocommerce_factoring004_admin',
+                plugin_dir_url('factoring004-gateway/assets/js/factoring004.js').'factoring004.js',
+                array(), false, true
+            );
+            wp_enqueue_style(
+                'woocommerce_factoring004',
+                plugin_dir_url('factoring004-gateway/assets/css/factoring004.css').'factoring004.css',
+                array(),false,'all'
+            );
         }
 
         /**
          * Пользовательские CSS и JS, в случае если испаользуете в админ части
          */
-        public function admin_scripts() {
+        public function admin_scripts()
+        {
             $screen    = get_current_screen();
             $screen_id = $screen ? $screen->id : '';
 
@@ -271,7 +318,9 @@ function factoring004_init_gateway_class() {
          */
         public function validate_fields()
         {
-            //
+            if (!(int)isset($_POST['checkout_factoring004_agreement'])) {
+                wc_add_notice('Вам необходимо согласиться с условиями!', 'error');
+            }
         }
 
         /**
@@ -279,7 +328,7 @@ function factoring004_init_gateway_class() {
          */
         public function process_payment($order_id)
         {
-            //
+            print_r($order_id);die;
         }
 
         /**

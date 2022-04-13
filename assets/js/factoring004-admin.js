@@ -22,7 +22,6 @@ jQuery(function ($) {
                 location.reload();
             },
             success: function (data) {
-                console.log(data)
                 alert(data.message)
             },
             error: function(xhr, ajaxOptions, thrownError) {
