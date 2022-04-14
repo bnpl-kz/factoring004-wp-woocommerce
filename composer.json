@@ -1,0 +1,5 @@
+{
+    "require": {
+        "bnpl-partners/factoring004": "dev-legacy"
+    }
+}
