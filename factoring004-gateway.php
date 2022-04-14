@@ -68,7 +68,7 @@ function factoring004_init_gateway_class() {
         public function __construct()
         {
             $this->id = 'factoring004'; // id плагина платежного шлюза
-            $this->icon = ''; // URL значка, который будет отображаться на странице оформления заказа рядом с именем вашего шлюза
+            $this->icon = apply_filters( 'woocommerce_gateway_icon', plugin_dir_url('factoring004-gateway/assets/images/factoring004_logo.png').'factoring004_logo.png'); // URL значка, который будет отображаться на странице оформления заказа рядом с именем вашего шлюза
             $this->has_fields = false; // если вам нужна индивидуальная форма кредитной карты
             $this->method_title = 'Рассрочка 0-0-4'; // заголовок
             $this->method_description = 'Описание для Рассрочка 0-0-4'; // описание
@@ -100,7 +100,7 @@ function factoring004_init_gateway_class() {
 
             // Регистрация вывода чекбокс оферты
             if ($this->get_option('agreement_file')) {
-                add_action('woocommerce_review_order_before_submit', array($this,'bt_add_checkout_checkbox'),999);
+                add_action('woocommerce_review_order_before_submit', array($this,'bt_add_checkout_checkbox'));
             }
         }
 
