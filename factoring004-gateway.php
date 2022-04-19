@@ -6,15 +6,51 @@
  * Description: Купи сейчас, плати потом! Быстрое и удобное оформление рассрочки на 4 месяца без первоначальной оплаты для жителей Казахстана. Моментальное подтверждение, без комиссий и процентов. Для заказов суммой от 6000 до 200000 тг.
  * Author: Team BNPL
  * Author URI:
- * Version: 1.0.1
+ * Version: 1.0.0
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
- * Этот хук действия регистрирует наш класс PHP как платежный шлюз WooCommerce.
+ * Хук для создания таблиц в бд, срабатывает в момент активации плагина
+ */
+register_activation_hook(__FILE__, 'create_table_factoring004_payment_gateway');
+
+function create_table_factoring004_payment_gateway()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'factoring004_order_preapps';
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+                     `id` INT NOT NULL AUTO_INCREMENT, 
+                     `order_id` INT NOT NULL,
+                     `preapp_uid` VARCHAR(255) NOT NULL, 
+                     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                     PRIMARY KEY (`id`),
+                     CONSTRAINT unique_$table_name UNIQUE (order_id, preapp_uid)
+                     ) ENGINE = InnoDB;";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+/**
+ * Хук для удаления таблиц в бд, срабатывает в момент деактивации плагина
+ */
+register_deactivation_hook( __FILE__, 'drop_table_factoring004_payment_gateway');
+
+function drop_table_factoring004_payment_gateway()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'factoring004_order_preapps';
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+}
+
+/**
+ * Хук действия регистрирует класс PHP как платежный шлюз WooCommerce.
  */
 
 add_filter('woocommerce_payment_gateways', 'factoring004_add_gateway_class');
-function factoring004_add_gateway_class($gateways) {
+function factoring004_add_gateway_class($gateways)
+{
     $gateways[] = 'WC_Factoring004_Gateway';
     return $gateways;
 }
@@ -60,7 +96,9 @@ function factoring004_init_gateway_class() {
     class WC_Factoring004_Gateway extends WC_Payment_Gateway
     {
 
-        private $zone_name = 'Казахстан';
+        const REQUIRED_FIELDS = ['billNumber', 'status', 'preappId'];
+
+        const ZONE_NAME = 'Казахстан';
 
         /**
          * Class constructor, more about it in Step 3
@@ -68,10 +106,10 @@ function factoring004_init_gateway_class() {
         public function __construct()
         {
             $this->id = 'factoring004'; // id плагина платежного шлюза
-            $this->icon = apply_filters( 'woocommerce_gateway_icon', plugin_dir_url('factoring004-gateway/assets/images/factoring004_logo.png').'factoring004_logo.png'); // URL значка, который будет отображаться на странице оформления заказа рядом с именем вашего шлюза
+            $this->icon = apply_filters('woocommerce_gateway_icon', plugin_dir_url('factoring004-gateway/assets/images/factoring004.svg').'factoring004.svg'); // URL значка, который будет отображаться на странице оформления заказа рядом с именем вашего шлюза
             $this->has_fields = false; // если вам нужна индивидуальная форма кредитной карты
             $this->method_title = 'Рассрочка 0-0-4'; // заголовок
-            $this->method_description = 'Описание для Рассрочка 0-0-4'; // описание
+            $this->method_description = 'Купи сейчас, плати потом! Быстрое и удобное оформление рассрочки на 4 месяца без первоначальной оплаты. Моментальное подтверждение, без комиссий и процентов. Для заказов суммой от 6000 до 200000 тг.'; // описание
 
             $this->supports = array(
                 'products'
@@ -86,6 +124,8 @@ function factoring004_init_gateway_class() {
             $this->description = $this->get_option('description');
             $this->enabled = $this->get_option('enabled');
 
+            require_once 'factoring004.php';
+
             // Хук действия сохраняет настройки
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
@@ -96,12 +136,13 @@ function factoring004_init_gateway_class() {
             add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
 
             // Регистрация вебхука
-            add_action('woocommerce_api_{webhook name}', array($this, 'webhook'));
+            add_action('woocommerce_api_factoring004-post-link', array($this, 'webhook'));
 
             // Регистрация вывода чекбокс оферты
             if ($this->get_option('agreement_file')) {
                 add_action('woocommerce_review_order_before_submit', array($this,'bt_add_checkout_checkbox'));
             }
+
         }
 
         public function bt_add_checkout_checkbox()
@@ -318,9 +359,11 @@ function factoring004_init_gateway_class() {
          */
         public function validate_fields()
         {
-            if (!(int)isset($_POST['checkout_factoring004_agreement'])) {
+            if (empty($_POST['checkout_factoring004_agreement'])) {
                 wc_add_notice('Вам необходимо согласиться с условиями!', 'error');
+                return false;
             }
+            return true;
         }
 
         /**
@@ -328,7 +371,24 @@ function factoring004_init_gateway_class() {
          */
         public function process_payment($order_id)
         {
-            print_r($order_id);die;
+            $order = wc_get_order($order_id);
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('preapp_token'));
+
+            $redirectLink = $factoring004->preApp(
+                [
+                    'partnerName' => $this->get_option('partner_name'),
+                    'partnerCode' => $this->get_option('partner_code'),
+                    'pointCode' => $this->get_option('point_code'),
+                    'partnerEmail' => $this->get_option('partner_email'),
+                    'partnerWebsite' => $this->get_option('partner_website'),
+                ],
+                $order
+            );
+
+            return array(
+                'result' => 'success',
+                'redirect' => $redirectLink
+            );
         }
 
         /**
@@ -336,7 +396,45 @@ function factoring004_init_gateway_class() {
          */
         public function webhook()
         {
-            //
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                wp_send_json(['success'=>false, 'error' => 'Method not allowed'],405);
+            }
+
+            $request = json_decode(file_get_contents('php://input'), true);
+
+            foreach (static::REQUIRED_FIELDS as $field) {
+                if (empty($request[$field]) || !is_string($field)) {
+                    wp_send_json(['success' => false, 'error' => $field . ' is invalid'], 400);
+                }
+            }
+
+            $order = wc_get_order($request['billNumber']);
+
+            if (!$order) {
+                wp_send_json(['success'=>false, 'error' => 'Order not found'],400);
+            }
+
+            if ($request['status'] === 'preapproved') {
+                wp_send_json(['response' => 'preapproved'],200);
+            } elseif ($request['status'] === 'declined') {
+                $order->update_status('failed');
+                wp_send_json(['response' => 'declined'],200);
+            } elseif ($request['status'] === 'completed') {
+                $order->update_status('processing');
+            } else {
+                wp_send_json(['success' => false, 'error' => 'Unexpected status'], 400);
+            }
+
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'factoring004_order_preapps';
+            $result = $wpdb->insert("$table_name", array('order_id'=>$request['billNumber'], 'preapp_uid'=>$request['preappId']));
+
+            if (!$result) {
+                wp_send_json(['success' => false, 'error' => 'An error occurred'], 500);
+            }
+
+            wp_send_json(['response' => 'ok'],200);
+
         }
 
         /**
@@ -347,7 +445,7 @@ function factoring004_init_gateway_class() {
             $zones = WC_Shipping_Zones::get_zones();
             $methods = [];
             foreach ($zones as $zone) {
-                if ($zone['zone_name'] === $this->zone_name) {
+                if ($zone['zone_name'] === static::ZONE_NAME) {
                     foreach ($zone['shipping_methods'] as $method) {
                         if ($method->enabled === 'yes') {
                             $methods[] = [
@@ -383,13 +481,11 @@ function factoring004_init_gateway_class() {
             if (file_exists(wp_upload_dir()['basedir'].'/' . $agreement_file)) {
                 if (!unlink(wp_upload_dir()['basedir'].'/' . $agreement_file)) {
                     wp_send_json(['success'=>false,'message'=>'Неуспех!']);
-                    wp_die();
                 }
             }
 
             $this->update_option('agreement_file');
             wp_send_json(['success'=>true,'message'=>'Успех!']);
-            wp_die();
         }
     }
 }
