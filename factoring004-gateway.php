@@ -9,8 +9,8 @@
  * Version: 1.0.0
  */
 
-defined( 'ABSPATH' ) || exit;
-
+defined('ABSPATH') || exit;
+session_start();
 /**
  * Хук для создания таблиц в бд, срабатывает в момент активации плагина
  */
@@ -35,7 +35,7 @@ function create_table_factoring004_payment_gateway()
 /**
  * Хук для удаления таблиц в бд, срабатывает в момент деактивации плагина
  */
-register_deactivation_hook( __FILE__, 'drop_table_factoring004_payment_gateway');
+register_deactivation_hook(__FILE__, 'drop_table_factoring004_payment_gateway');
 
 function drop_table_factoring004_payment_gateway()
 {
@@ -56,6 +56,30 @@ function factoring004_add_gateway_class($gateways)
 }
 
 /**
+ * хук вывода кнопки в деталях заказа для обработки доставки
+ */
+add_action('woocommerce_order_item_add_action_buttons', 'action_woocommerce_order_item_add_action_buttons', 10, 1);
+
+function action_woocommerce_order_item_add_action_buttons($order)
+{
+    $screen    = get_current_screen();
+    $screen_id = $screen ? $screen->id : '';
+
+    if ($screen_id !== 'shop_order') {
+        return;
+    }
+
+    $payment_method = $order->get_payment_method();
+    $order_current_status = $order->get_status();
+
+    if ($payment_method === 'factoring004' && $order_current_status === 'processing') {
+        echo '<button id="factoring004-delivery" class="button generate-items factoring004-delivery" target="_blank">Доставлен</button>';
+    }
+
+}
+
+
+/**
  * Этот хук действия регистрирует функцию для работы с условиями отображения платежа
  */
 
@@ -63,6 +87,10 @@ add_filter('woocommerce_available_payment_gateways', 'disable_factoring004_above
 
 function disable_factoring004_above_6000_or_below_200000($available_gateways)
 {
+    if (is_admin()) {
+        return $available_gateways;
+    }
+
     $minSum = 6000;
     $maxSum = 200000;
     if (WC()->cart->total < $minSum || WC()->cart->total > $maxSum) {
@@ -74,12 +102,46 @@ function disable_factoring004_above_6000_or_below_200000($available_gateways)
 add_action('plugins_loaded', 'factoring004_init_gateway_class');
 
 /**
+ * Хук регистрации обработчика вовзрата отправки смс
+ */
+
+add_action('wp_ajax_factoring004_send_otp_return', 'factoring004_send_otp_return_callback');
+
+function factoring004_send_otp_return_callback()
+{
+    if (!wp_verify_nonce($_POST['_nonce'])) {
+        wp_die(0,400);
+    }
+
+    $data = $_POST['data'];
+
+    call_user_func(array(new WC_Factoring004_Gateway,'send_otp_return'),$data);
+}
+
+/**
+ * Хук регистрации обработчика вовзрата проверки смс кода
+ */
+
+add_action('wp_ajax_factoring004_check_otp_return', 'factoring004_check_otp_return_callback');
+
+function factoring004_check_otp_return_callback()
+{
+    if (!wp_verify_nonce($_POST['_nonce'])) {
+        wp_die(0,400);
+    }
+
+    $data = $_POST['data'];
+
+    call_user_func(array(new WC_Factoring004_Gateway,'check_otp_return'),$data);
+}
+
+/**
  * Хук регистрации обработчика удаления файла
  */
 
-add_action('wp_ajax_factoring004_agreement_destroy', 'callback');
+add_action('wp_ajax_factoring004_agreement_destroy', 'factoring004_agreement_destroy_callback');
 
-function callback()
+function factoring004_agreement_destroy_callback()
 {
     if (!wp_verify_nonce($_POST['_nonce'])) {
         wp_die(0,400);
@@ -90,8 +152,44 @@ function callback()
     call_user_func(array(new WC_Factoring004_Gateway,'destroyAgreementFile'),$filename);
 }
 
-function factoring004_init_gateway_class() {
+/**
+ * Хук для добавления кастомных ассетов
+ */
+add_action('admin_head', 'add_custom_assets');
 
+function add_custom_assets()
+{
+    $screen    = get_current_screen();
+    $screen_id = $screen ? $screen->id : '';
+
+    if ($screen_id !== 'shop_order') {
+        return;
+    }
+
+    wp_enqueue_style(
+        'woocommerce_factoring004_admin',
+        plugin_dir_url('factoring004-gateway/assets/css/factoring004-admin-orders.css').'factoring004-admin-orders.css',
+        array(),false,'all'
+    );
+
+    wp_enqueue_script(
+        'woocommerce_factoring004_admin',
+        plugin_dir_url('factoring004-gateway/assets/js/factoring004-admin-orders.js').'factoring004-admin-orders.js',
+        array(), false, true
+    );
+
+    wp_nonce_field(-1,'factoring004_nonce');
+
+    require_once 'templates/modal.html';
+
+    $scriptData = array(
+        'deliveries' => (new WC_Factoring004_Gateway)->get_option('delivery_items')
+    );
+
+    wp_localize_script('woocommerce_factoring004_admin', 'factoring004_options', $scriptData);
+}
+
+function factoring004_init_gateway_class() {
 
     class WC_Factoring004_Gateway extends WC_Payment_Gateway
     {
@@ -112,7 +210,8 @@ function factoring004_init_gateway_class() {
             $this->method_description = 'Купи сейчас, плати потом! Быстрое и удобное оформление рассрочки на 4 месяца без первоначальной оплаты. Моментальное подтверждение, без комиссий и процентов. Для заказов суммой от 6000 до 200000 тг.'; // описание
 
             $this->supports = array(
-                'products'
+                'products',
+                'refunds'
             );
 
             // Метод со всеми полями параметров
@@ -169,14 +268,15 @@ function factoring004_init_gateway_class() {
                         :
                             $data['woocommerce_factoring004_agreement_file'],
                     'woocommerce_factoring004_delivery_items'
-                        => implode(',',$data['woocommerce_factoring004_delivery_items'])
+                        => isset($data['woocommerce_factoring004_delivery_items'])
+                        ?
+                            implode(',',$data['woocommerce_factoring004_delivery_items'])
+                        :
+                        $data['woocommerce_factoring004_delivery_items']
                 ]));
             return parent::process_admin_options();
         }
 
-        /**
-         * Plugin options, we deal with it in Step 3 too
-         */
         public function init_form_fields()
         {
             $this->form_fields = array(
@@ -277,6 +377,9 @@ function factoring004_init_gateway_class() {
             return ob_get_clean();
         }
 
+        /**
+         * Создаем кастомное поле для выбора способа доставки
+         */
         public function generate_factoring004_delivery_items_html()
         {
             ob_start();
@@ -352,6 +455,7 @@ function factoring004_init_gateway_class() {
                 plugin_dir_url('factoring004-gateway/assets/js/factoring004-admin.js').'factoring004-admin.js',
                 array(), false, true
             );
+
         }
 
         /**
@@ -389,6 +493,75 @@ function factoring004_init_gateway_class() {
                 'result' => 'success',
                 'redirect' => $redirectLink
             );
+        }
+
+        /**
+         * @param $data
+         * отправка смс для возврата
+         */
+        public function send_otp_return($data)
+        {
+            $order = wc_get_order($data['order_id']);
+
+            if (!$order) {
+                return false;
+            }
+
+            $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
+
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
+
+            if (!$factoring004->sendOtpReturn($amount, $this->get_option('partner_code'), $order)) {
+                return false;
+            }
+
+            return true;
+
+        }
+
+        /**
+         * @param $data
+         * проверка смс кода для возврата
+         */
+
+        public function check_otp_return($data)
+        {
+            $order = wc_get_order($data['order_id']);
+
+            if (!$order) {
+                return false;
+            }
+
+            $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
+
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
+
+            if (!$factoring004->checkOtpReturn($amount, $this->get_option('partner_code'), $order, $data['otp_code'])) {
+                return false;
+            }
+
+            $order->update_status('refunded');
+
+            return true;
+        }
+
+        /**
+         * Обработка возврата
+         */
+
+        public function process_refund($order_id, $amount = null, $reason = '')
+        {
+            $order = wc_get_order($order_id);
+
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('delivery_token'));
+
+            if (!$factoring004->return($order, ceil($amount), $this->get_option('partner_code'))) {
+                return false;
+            }
+
+            $order->update_status('refunded');
+
+            return true;
         }
 
         /**

@@ -1,5 +1,6 @@
 jQuery(function ($) {
     'use strict'
+
     $(document).on('click','#factoring004-button-delete',function (e) {
         let filename = $(e.target).attr('data-filename');
         let wpnonce = $('#_wpnonce').val();
@@ -29,4 +30,5 @@ jQuery(function ($) {
             }
         })
     })
+
 })

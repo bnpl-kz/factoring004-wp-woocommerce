@@ -5,7 +5,7 @@ jQuery(function ($) {
         let paymentId = 'factoring004';
         let paymentFactoring004 = $('#payment').find('.payment_methods').find('input:checked');
 
-        $('body').on( 'updated_checkout', function() {
+        $('body').on('updated_checkout', function() {
             agreementShowOrHide(paymentFactoring004.val())
         });
 
