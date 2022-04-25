@@ -136,6 +136,40 @@ function factoring004_check_otp_return_callback()
 }
 
 /**
+ * Хук регистрации обработчика доставки отправки смс
+ */
+
+add_action('wp_ajax_factoring004_send_otp_delivery', 'factoring004_send_otp_delivery_callback');
+
+function factoring004_send_otp_delivery_callback()
+{
+    if (!wp_verify_nonce($_POST['_nonce'])) {
+        wp_die(0,400);
+    }
+
+    $data = $_POST['data'];
+
+    call_user_func(array(new WC_Factoring004_Gateway,'send_otp_delivery'),$data);
+}
+
+/**
+ * Хук регистрации обработчика доставки
+ */
+
+add_action('wp_ajax_factoring004_delivery', 'factoring004_with_or_without_otp_delivery_callback');
+
+function factoring004_with_or_without_otp_delivery_callback()
+{
+    if (!wp_verify_nonce($_POST['_nonce'])) {
+        wp_die(0,400);
+    }
+
+    $data = $_POST['data'];
+
+    call_user_func(array(new WC_Factoring004_Gateway,'process_delivery'),$data);
+}
+
+/**
  * Хук регистрации обработчика удаления файла
  */
 
@@ -495,6 +529,25 @@ function factoring004_init_gateway_class() {
             );
         }
 
+
+        public function send_otp_delivery($data)
+        {
+            $order = wc_get_order($data['order_id']);
+
+            if (!$order) {
+                wp_send_json(false);
+            }
+
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
+
+            if (!$factoring004->sendOtpDelivery($this->get_option('partner_code'), $order)) {
+                wp_send_json(false);
+            }
+
+            wp_send_json(true);
+
+        }
+
         /**
          * @param $data
          * отправка смс для возврата
@@ -504,7 +557,7 @@ function factoring004_init_gateway_class() {
             $order = wc_get_order($data['order_id']);
 
             if (!$order) {
-                return false;
+                wp_send_json(false);
             }
 
             $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
@@ -529,7 +582,7 @@ function factoring004_init_gateway_class() {
             $order = wc_get_order($data['order_id']);
 
             if (!$order) {
-                return false;
+                wp_send_json(false);
             }
 
             $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
@@ -541,6 +594,28 @@ function factoring004_init_gateway_class() {
             }
 
             $order->update_status('refunded');
+
+            wp_send_json(true);
+        }
+
+        /**
+         * обработка доставки
+         */
+        public function process_delivery($data)
+        {
+            $order = wc_get_order($data['order_id']);
+
+            if (!$order) {
+                wp_send_json(false);
+            }
+
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('delivery_token'));
+
+            if (!$factoring004->delivery($data['order_id'],$this->get_option('partner_code'), $data['otp_code'])) {
+                wp_send_json(false);
+            }
+
+            $order->update_status('completed');
 
             wp_send_json(true);
         }

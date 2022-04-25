@@ -22,7 +22,7 @@ jQuery(function ($) {
             let deliveries = factoring004_options.deliveries.split(',')
             if ($.inArray(delivery, deliveries) !== -1) {
                 $('.do-api-refund').removeClass('do-api-refund').addClass('do-api-refund-with-sms')
-                // $('.do-api-delivery').removeClass('do-api-delivery').addClass('do-api-delivery-with-sms')
+                $('.do-api-delivery').attr('data-otp',true)
             }
         }
 
@@ -35,6 +35,8 @@ jQuery(function ($) {
             if (!confirm('Вы действительно хотите запустить процедуру возврата? Это действие не может быть отменено.')) {
                 return;
             }
+
+            $('#factoring004-button-check-otp').attr('data-action','factoring004_check_otp_return')
 
             let wpnonce = $('#factoring004_nonce').val();
             let order_id = $('#post_ID').val();
@@ -85,6 +87,7 @@ jQuery(function ($) {
                 $('.factoring004-error-text').text('Неверно введен смс код!');
             } else {
                 $('.factoring004-error-text').text('')
+                let action = $('#factoring004-button-check-otp').data('action')
 
                 let wpnonce = $('#factoring004_nonce').val();
                 let order_id = $('#post_ID').val();
@@ -94,7 +97,7 @@ jQuery(function ($) {
                     url: ajaxurl,
                     type: 'POST',
                     data: {
-                        action: 'factoring004_check_otp_return',
+                        action: action,
                         data: {
                             order_id,
                             amount,
@@ -113,7 +116,7 @@ jQuery(function ($) {
                         if (response) {
                             window.location.reload()
                         } else {
-                            alert('Что-то пошло не так! Попробуйте позже!')
+                            alert('Что-то пошло не так! Попробуйте еще раз!')
                         }
                     },
                     error: function(xhr, ajaxOptions, thrownError) {
@@ -130,12 +133,77 @@ jQuery(function ($) {
         })
 
 
-        $(document).on('click','.do-api-delivery-with-sms, .do-api-delivery',function (e) {
-            if ($(e.target).hasClass('do-api-delivery-with-sms')) {
-                console.log('asd')
-            } else {
-                console.log('assadd')
+        $(document).on('click','.do-api-delivery',function (e) {
+
+            let wpnonce = $('#factoring004_nonce').val();
+            let order_id = $('#post_ID').val();
+
+            if ($(e.target).data('otp')) {
+
+                $('#factoring004-button-check-otp').attr('data-action','factoring004_delivery')
+
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'factoring004_send_otp_delivery',
+                        data: {
+                            order_id,
+                        },
+                        _nonce : wpnonce,
+                    },
+                    beforeSend: function () {
+                        block()
+                    },
+                    complete: function () {
+                        //
+                    },
+                    success: function (response) {
+                        if (response) {
+                            $('#wc-backbone-modal-dialog-factoring004-otp').css('display','block')
+                        } else {
+                            alert('Произошла ошибка при отправке смс!')
+                            unblock()
+                        }
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText)
+                        unblock()
+                    }
+                })
             }
+
+            let otp_code = $('.factoring004-input-check-otp').val();
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'factoring004_delivery',
+                    data: {
+                        order_id,
+                        otp_code
+                    },
+                    _nonce : wpnonce,
+                },
+                beforeSend: function () {
+                    block()
+                },
+                complete: function () {
+                    unblock()
+                },
+                success: function (response) {
+                    if (response) {
+                        // window.location.reload()
+                    } else {
+                        alert('Что-то пошло не так! Попробуйте еще раз!')
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText)
+                }
+            })
+
         })
 
 
