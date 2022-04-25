@@ -73,7 +73,7 @@ function action_woocommerce_order_item_add_action_buttons($order)
     $order_current_status = $order->get_status();
 
     if ($payment_method === 'factoring004' && $order_current_status === 'processing') {
-        echo '<button id="factoring004-delivery" class="button generate-items factoring004-delivery" target="_blank">Доставлен</button>';
+        echo '<button class="button generate-items do-api-delivery" type="button">Доставлен</button>';
     }
 
 }
@@ -512,10 +512,10 @@ function factoring004_init_gateway_class() {
             $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
 
             if (!$factoring004->sendOtpReturn($amount, $this->get_option('partner_code'), $order)) {
-                return false;
+                wp_send_json(false);
             }
 
-            return true;
+            wp_send_json(true);
 
         }
 
@@ -537,12 +537,12 @@ function factoring004_init_gateway_class() {
             $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
 
             if (!$factoring004->checkOtpReturn($amount, $this->get_option('partner_code'), $order, $data['otp_code'])) {
-                return false;
+                wp_send_json(false);
             }
 
             $order->update_status('refunded');
 
-            return true;
+            wp_send_json(true);
         }
 
         /**

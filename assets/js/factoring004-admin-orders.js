@@ -22,6 +22,7 @@ jQuery(function ($) {
             let deliveries = factoring004_options.deliveries.split(',')
             if ($.inArray(delivery, deliveries) !== -1) {
                 $('.do-api-refund').removeClass('do-api-refund').addClass('do-api-refund-with-sms')
+                // $('.do-api-delivery').removeClass('do-api-delivery').addClass('do-api-delivery-with-sms')
             }
         }
 
@@ -127,6 +128,16 @@ jQuery(function ($) {
         $(document).on('click','#factoring004-button-check-otp-cancel',function (e) {
             window.location.reload()
         })
+
+
+        $(document).on('click','.do-api-delivery-with-sms, .do-api-delivery',function (e) {
+            if ($(e.target).hasClass('do-api-delivery-with-sms')) {
+                console.log('asd')
+            } else {
+                console.log('assadd')
+            }
+        })
+
 
     })
 })
