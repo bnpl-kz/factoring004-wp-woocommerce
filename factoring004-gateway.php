@@ -1,16 +1,20 @@
 <?php
 
-/*
+/**
  * Plugin Name: Рассрочка 0-0-4
  * Plugin URI:
  * Description: Купи сейчас, плати потом! Быстрое и удобное оформление рассрочки на 4 месяца без первоначальной оплаты для жителей Казахстана. Моментальное подтверждение, без комиссий и процентов. Для заказов суммой от 6000 до 200000 тг.
  * Author: Team BNPL
  * Author URI:
  * Version: 1.0.0
+ * Text Domain: factoring004
+ * Domain Path: /languages/
  */
 
 defined('ABSPATH') || exit;
+
 session_start();
+
 /**
  * Хук для создания таблиц в бд, срабатывает в момент активации плагина
  */
@@ -47,8 +51,8 @@ function drop_table_factoring004_payment_gateway()
 /**
  * Хук действия регистрирует класс PHP как платежный шлюз WooCommerce.
  */
-
 add_filter('woocommerce_payment_gateways', 'factoring004_add_gateway_class');
+
 function factoring004_add_gateway_class($gateways)
 {
     $gateways[] = 'WC_Factoring004_Gateway';
@@ -418,7 +422,7 @@ function factoring004_init_gateway_class() {
         {
             ob_start();
             ?>
-                <tr valign="top">
+            <tr valign="top">
                     <th scope="row" class="titledesc">
                         <label for="woocommerce_factoring004_delivery_items">Способы доставки</label>
                     </th>
