@@ -1,0 +1,8 @@
+.woocommerce-invalid #factoring004_checkbox_agreement {
+    outline: 2px solid red;
+    outline-offset: 2px;
+}
+.factoring004-checkbox-agreement {
+    display: none;
+}
+
