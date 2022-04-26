@@ -17,8 +17,8 @@
 
 ![Setup-1](https://github.com/bnpl-partners/factoring004-wp-woocommerce/raw/main/doc/wc_settings.png)
 
-Из списка ниже нажмите на `Рассрочка 0-0-4`. Нажмите на нее и откроется
-страницы настройки модуля.
+Из списка ниже нажмите на `Рассрочка 0-0-4` и откроется
+страница настройки модуля.
 
 
 ![Setup-2](https://github.com/bnpl-partners/factoring004-wp-woocommerce/raw/main/doc/payment_fields.png)
