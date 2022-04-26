@@ -21,7 +21,7 @@
 страницы настройки модуля.
 
 
-![Setup-2](https://github.com/beGateway/woocommerce-payment-module/raw/main/doc/payment_settings.png)
+![Setup-2](https://github.com/bnpl-partners/factoring004-wp-woocommerce/raw/main/doc/payment_fields.png)
 
 * Получите данные от АПИ платежной системы
 * Заполните данные
