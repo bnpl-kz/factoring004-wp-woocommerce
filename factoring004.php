@@ -19,6 +19,10 @@ use BnplPartners\Factoring004\Otp\CheckOtpReturn;
 use BnplPartners\Factoring004\Otp\SendOtp;
 use BnplPartners\Factoring004\Otp\SendOtpReturn;
 use BnplPartners\Factoring004\PreApp\PreAppMessage;
+use BnplPartners\Factoring004\Transport\GuzzleTransport;
+use BnplPartners\Factoring004\Transport\TransportInterface;
+use Psr\Log\NullLogger;
+require_once 'factoring004-logger.php';
 
 final class WC_Factoring004
 {
@@ -27,11 +31,14 @@ final class WC_Factoring004
 
     private $base_url;
 
-    private Api $api;
+    private $api;
 
-    public function __construct($host, $token)
+    private $debug_mode;
+
+    public function __construct($host, $token, $debug)
     {
-        $this->api = Api::create($host, new BearerTokenAuth($token));
+        $this->debug_mode = $debug;
+        $this->api = Api::create($host, new BearerTokenAuth($token), $this->createTransport());
         $this->base_url = get_site_url();
     }
 
@@ -259,5 +266,13 @@ final class WC_Factoring004
         return ($amount > 0 && $total > $amount)
             ? (int) $total - $amount
             : 0;
+    }
+
+    private function createTransport(): TransportInterface
+    {
+        $transport = new GuzzleTransport();
+        $transport->setLogger($this->debug_mode ? new DebugLogger() : new NullLogger());
+
+        return $transport;
     }
 }
