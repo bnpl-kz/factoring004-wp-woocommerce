@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '8220c6e33eb5eaedeb9ff031788bbd22bac1a56a',
+        'reference' => 'd313b0f4c2395101850d943a9a44e76eb6ef8ace',
         'name' => '__root__',
         'dev' => false,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '8220c6e33eb5eaedeb9ff031788bbd22bac1a56a',
+            'reference' => 'd313b0f4c2395101850d943a9a44e76eb6ef8ace',
             'dev_requirement' => false,
         ),
         'bnpl-partners/factoring004' => array(
@@ -25,7 +25,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../bnpl-partners/factoring004',
             'aliases' => array(),
-            'reference' => 'ea47fb30fd7bc901f8e6fcca7d27b3b2fd2a7221',
+            'reference' => '9f341e81532e8e6e9b534dec71d8e50b6d1ff791',
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
@@ -108,6 +108,15 @@
             'provided' => array(
                 0 => '1.0',
             ),
+        ),
+        'psr/log' => array(
+            'pretty_version' => '1.1.4',
+            'version' => '1.1.4.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../psr/log',
+            'aliases' => array(),
+            'reference' => 'd49695b909c3b7628b6289db5479a1c204601f11',
+            'dev_requirement' => false,
         ),
         'psr/simple-cache' => array(
             'pretty_version' => '1.0.1',

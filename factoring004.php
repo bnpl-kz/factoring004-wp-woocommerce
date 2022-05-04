@@ -6,6 +6,8 @@ require_once 'vendor/autoload.php';
 
 use BnplPartners\Factoring004\Api;
 use BnplPartners\Factoring004\Auth\BearerTokenAuth;
+use BnplPartners\Factoring004\ChangeStatus\CancelOrder;
+use BnplPartners\Factoring004\ChangeStatus\CancelStatus;
 use BnplPartners\Factoring004\ChangeStatus\DeliveryOrder;
 use BnplPartners\Factoring004\ChangeStatus\DeliveryStatus;
 use BnplPartners\Factoring004\ChangeStatus\MerchantsOrders;
@@ -107,12 +109,10 @@ final class WC_Factoring004
             file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
-
     }
 
     public function return($order, $amount, $partner_code)
     {
-
         try {
             $response = $this->api->changeStatus->changeStatusJson([
                 new MerchantsOrders(
@@ -139,7 +139,29 @@ final class WC_Factoring004
             file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
+    }
 
+    public function cancel($order, $partner_code)
+    {
+        try {
+            $response = $this->api->changeStatus->changeStatusJson([
+                new MerchantsOrders(
+                    (string) $partner_code,
+                    [new CancelOrder((string) $order->get_id(), CancelStatus::CANCEL())]
+                )
+            ]);
+
+            if ($response->getErrorResponses()) {
+                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                return false;
+            }
+
+            return true;
+
+        } catch (Exception $e) {
+            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            throw $e;
+        }
     }
 
     public function sendOtpDelivery($partner_code, $order)
@@ -164,7 +186,6 @@ final class WC_Factoring004
 
     public function sendOtpReturn($amount, $partner_code, $order)
     {
-
         try {
 
             $sendOtpReturn = new SendOtpReturn(
@@ -211,12 +232,10 @@ final class WC_Factoring004
             file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
-
     }
 
     private function checkOtpDelivery($order_id, $partner_code, $otp_code)
     {
-
         try {
             $checkOtp = new CheckOtp((string)$partner_code, (string)$order_id, (string)$otp_code);
 
@@ -233,8 +252,6 @@ final class WC_Factoring004
             file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
-
-
     }
 
     private function getAmountRemaining($amount, $total)

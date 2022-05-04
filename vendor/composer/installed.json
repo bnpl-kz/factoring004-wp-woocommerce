@@ -7,12 +7,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/bnpl-partners/factoring004.git",
-                "reference": "ea47fb30fd7bc901f8e6fcca7d27b3b2fd2a7221"
+                "reference": "9f341e81532e8e6e9b534dec71d8e50b6d1ff791"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bnpl-partners/factoring004/zipball/ea47fb30fd7bc901f8e6fcca7d27b3b2fd2a7221",
-                "reference": "ea47fb30fd7bc901f8e6fcca7d27b3b2fd2a7221",
+                "url": "https://api.github.com/repos/bnpl-partners/factoring004/zipball/9f341e81532e8e6e9b534dec71d8e50b6d1ff791",
+                "reference": "9f341e81532e8e6e9b534dec71d8e50b6d1ff791",
                 "shasum": ""
             },
             "require": {
@@ -22,9 +22,10 @@
                 "php": ">=7.0",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
+                "psr/log": "^1.1",
                 "psr/simple-cache": "^1.0"
             },
-            "time": "2022-03-15T05:57:08+00:00",
+            "time": "2022-05-03T07:40:49+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -606,6 +607,59 @@
                 "source": "https://github.com/php-fig/http-message/tree/master"
             },
             "install-path": "../psr/http-message"
+        },
+        {
+            "name": "psr/log",
+            "version": "1.1.4",
+            "version_normalized": "1.1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/d49695b909c3b7628b6289db5479a1c204601f11",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "time": "2021-05-03T11:20:27+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1.x-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "Psr/Log/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/1.1.4"
+            },
+            "install-path": "../psr/log"
         },
         {
             "name": "psr/simple-cache",

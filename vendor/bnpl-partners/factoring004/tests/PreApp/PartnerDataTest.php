@@ -11,13 +11,11 @@ class PartnerDataTest extends TestCase
 {
     public function testCreateFromArray(): void
     {
-        $expected = new PartnerData('a', 'b', 'c', 'test@example.com', 'http://example.com');
+        $expected = new PartnerData('a', 'b', 'c');
         $actual = PartnerData::createFromArray([
             'partnerName' => 'a',
             'partnerCode' => 'b',
             'pointCode' => 'c',
-            'partnerEmail' => 'test@example.com',
-            'partnerWebsite' => 'http://example.com',
         ]);
         $this->assertEquals($expected, $actual);
 
@@ -28,6 +26,26 @@ class PartnerDataTest extends TestCase
             'pointCode' => 'test',
             'partnerEmail' => 'test@example.org',
             'partnerWebsite' => 'http://example.org',
+        ]);
+        $this->assertEquals($expected, $actual);
+
+        $expected = new PartnerData('name', 'code', 'test', '', '');
+        $actual = PartnerData::createFromArray([
+            'partnerName' => 'name',
+            'partnerCode' => 'code',
+            'pointCode' => 'test',
+            'partnerEmail' => '',
+            'partnerWebsite' => '',
+        ]);
+        $this->assertEquals($expected, $actual);
+
+        $expected = new PartnerData('name', 'code', 'test', null, null);
+        $actual = PartnerData::createFromArray([
+            'partnerName' => 'name',
+            'partnerCode' => 'code',
+            'pointCode' => 'test',
+            'partnerEmail' => null,
+            'partnerWebsite' => null,
         ]);
         $this->assertEquals($expected, $actual);
     }
@@ -78,6 +96,12 @@ class PartnerDataTest extends TestCase
 
         $partnerData = new PartnerData('a', 'test', 'c', 'test@example.org', 'http://example.com');
         $this->assertEquals('test@example.org', $partnerData->getPartnerEmail());
+
+        $partnerData = new PartnerData('a', 'test', 'c', '', '');
+        $this->assertEmpty($partnerData->getPartnerEmail());
+
+        $partnerData = new PartnerData('a', 'test', 'c');
+        $this->assertNull($partnerData->getPartnerEmail());
     }
 
     public function testGetPartnerWebsite(): void
@@ -87,6 +111,12 @@ class PartnerDataTest extends TestCase
 
         $partnerData = new PartnerData('a', 'test', 'c', 'test@example.com', 'http://example.org');
         $this->assertEquals('http://example.org', $partnerData->getPartnerWebsite());
+
+        $partnerData = new PartnerData('a', 'test', 'c', '', '');
+        $this->assertEmpty($partnerData->getPartnerWebsite());
+
+        $partnerData = new PartnerData('a', 'test', 'c');
+        $this->assertNull($partnerData->getPartnerWebsite());
     }
 
     public function testToArray(): void
@@ -110,6 +140,24 @@ class PartnerDataTest extends TestCase
             'partnerWebsite' => 'http://example.org',
         ];
         $this->assertEquals($expected, $partnerData->toArray());
+
+        $partnerData = new PartnerData('name', 'code', 'test', '', '');
+        $expected = array_filter([
+            'partnerName' => 'name',
+            'partnerCode' => 'code',
+            'pointCode' => 'test',
+            'partnerEmail' => '',
+            'partnerWebsite' => '',
+        ]);
+        $this->assertEquals($expected, $partnerData->toArray());
+
+        $partnerData = new PartnerData('name', 'code', 'test');
+        $expected = [
+            'partnerName' => 'name',
+            'partnerCode' => 'code',
+            'pointCode' => 'test',
+        ];
+        $this->assertEquals($expected, $partnerData->toArray());
     }
 
     public function invalidArraysProvider(): array
@@ -128,8 +176,6 @@ class PartnerDataTest extends TestCase
             [['partnerCode' => 'b', 'pointEmail' => 'test@example.com']],
             [['pointCode' => 'c', 'pointEmail' => 'test@example.com']],
             [['pointEmail' => 'test@example.com', 'pointWebsite' => 'http://example.com']],
-            [['partnerName' => 'a', 'partnerCode' => 'b', 'pointCode' => 'c', 'partnerEmail' => 'test@example.com']],
-            [['partnerName' => 'a', 'partnerCode' => 'b', 'pointCode' => 'c', 'partnerWebsite' => 'http://example.com']],
         ];
     }
 }

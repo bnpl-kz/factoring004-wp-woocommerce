@@ -77,7 +77,8 @@ function action_woocommerce_order_item_add_action_buttons($order)
     $order_current_status = $order->get_status();
 
     if ($payment_method === 'factoring004' && $order_current_status === 'processing') {
-        echo '<button class="button generate-items do-api-delivery" type="button">Доставлен</button>';
+        echo '<button class="button generate-items do-api-delivery" type="button">Доставка (Рассрочка 0-0-4)</button>';
+        echo '<button class="button generate-items do-api-cancel" type="button">Отмена (Рассрочка 0-0-4)</button>';
     }
 
 }
@@ -104,6 +105,24 @@ function disable_factoring004_above_6000_or_below_200000($available_gateways)
 }
 
 add_action('plugins_loaded', 'factoring004_init_gateway_class');
+
+
+/**
+ * Хук регистрации обработчика отмены
+ */
+
+add_action('wp_ajax_factoring004_cancel', 'factoring004_cancel_callback');
+
+function factoring004_cancel_callback()
+{
+    if (!wp_verify_nonce($_POST['_nonce'])) {
+        wp_die(0,400);
+    }
+
+    $data = $_POST['data'];
+
+    call_user_func(array(new WC_Factoring004_Gateway,'process_cancel'),$data);
+}
 
 /**
  * Хук регистрации обработчика вовзрата отправки смс
@@ -310,7 +329,7 @@ function factoring004_init_gateway_class() {
                         ?
                             implode(',',$data['woocommerce_factoring004_delivery_items'])
                         :
-                        $data['woocommerce_factoring004_delivery_items']
+                        ''
                 ]));
             return parent::process_admin_options();
         }
@@ -429,17 +448,18 @@ function factoring004_init_gateway_class() {
                     <td class="forminp">
                         <fieldset>
                             <label for="woocommerce_factoring004_delivery_items">
-                                <select multiple name="woocommerce_factoring004_delivery_items[]" id="woocommerce_factoring004_delivery_items">
-                                    <?php foreach ($this->getDeliveryItems() as $delivery): ?>
-                                        <option
+                                <?php foreach ($this->getDeliveryItems() as $delivery): ?>
+                                    <label style="display: block">
+                                        <input
                                             <?php foreach (explode(',', $this->get_option('delivery_items')) as $item): ?>
                                                 <?php if ($item === $delivery['id']): ?>
-                                                    selected
+                                                    checked
                                                 <?php endif; ?>
-                                            <?php endforeach; ?> value="<?php echo $delivery['id'] ?>"><?php echo $delivery['name'] ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                            <?php endforeach; ?>
+                                            type="checkbox" name="woocommerce_factoring004_delivery_items[]" value="<?php echo $delivery['id'] ?>">
+                                        <?php echo $delivery['name'] ?>
+                                    </label>
+                                <?php endforeach; ?>
                             </label>
                             <br>
                         </fieldset>
@@ -600,6 +620,29 @@ function factoring004_init_gateway_class() {
             $order->update_status('refunded');
 
             wp_send_json(true);
+        }
+
+        /**
+         * обработка отмены
+         */
+        public function process_cancel($data)
+        {
+            $order = wc_get_order($data['order_id']);
+
+            if (!$order) {
+                wp_send_json(false);
+            }
+
+            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('delivery_token'));
+
+            if (!$factoring004->cancel($order, $this->get_option('partner_code'))) {
+                wp_send_json(false);
+            }
+
+            $order->update_status('cancelled');
+
+            wp_send_json(true);
+
         }
 
         /**

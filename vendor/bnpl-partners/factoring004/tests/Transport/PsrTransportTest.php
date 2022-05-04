@@ -19,6 +19,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Log\LoggerInterface;
 
 class PsrTransportTest extends TestCase
 {
@@ -203,7 +204,7 @@ class PsrTransportTest extends TestCase
         $client->expects($this->once())
             ->method('sendRequest')
             ->with($this->callback(function (RequestInterface $request) {
-                return $request->getUri()->getPath() === '/test' && empty($request->getBody()->getContents());
+                return $request->getUri()->getPath() === '/test' && empty(strval($request->getBody()));
             }))
             ->willReturn(new PsrResponse(200, [], '{"status": false, "message": "error"}'));
 
@@ -221,7 +222,7 @@ class PsrTransportTest extends TestCase
         $client->expects($this->once())
             ->method('sendRequest')
             ->with($this->callback(function (RequestInterface $request) {
-                return $request->getBody()->getContents() === '{"a":15,"b":40,"c":[1,2,3]}';
+                return strval($request->getBody()) === '{"a":15,"b":40,"c":[1,2,3]}';
             }))
             ->willReturn(new PsrResponse(200, [], '{"status": false, "message": "error"}'));
 
@@ -241,7 +242,7 @@ class PsrTransportTest extends TestCase
             ->method('sendRequest')
             ->with($this->callback(function (RequestInterface $request) use ($data) {
                 return $request->getHeaderLine('Content-Type') === 'application/x-www-form-urlencoded'
-                    && $request->getBody()->getContents() === http_build_query($data);
+                    && strval($request->getBody()) === http_build_query($data);
             }))
             ->willReturn(new PsrResponse(200, [], '{"status": false, "message": "error"}'));
 
@@ -283,7 +284,7 @@ class PsrTransportTest extends TestCase
             ->method('sendRequest')
             ->with($this->callback(function (RequestInterface $request) use ($contentType, $method, $expectedData) {
                 return $request->getHeaderLine('Content-Type') === $contentType
-                    && $request->getMethod() === $method && $request->getBody()->getContents() === $expectedData;
+                    && $request->getMethod() === $method && strval($request->getBody()) === $expectedData;
             }))
             ->willReturn(new PsrResponse(200, [], '{"status": true, "message": "text"}'));
 
@@ -442,5 +443,27 @@ class PsrTransportTest extends TestCase
             new HttpFactory(),
             $client,
         );
+    }
+
+    public function testLogging(): void
+    {
+        $client = $this->createStub(ClientInterface::class);
+        $client->method('sendRequest')
+            ->willReturn(new PsrResponse(200, [], '{"a":"15"}'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->atLeast(2))
+            ->method('debug')
+            ->withConsecutive(
+                [AbstractTransport::LOGGER_PREFIX . ': Request: POST http://example.com/ {"a":"15"}',[]],
+                [AbstractTransport::LOGGER_PREFIX . ': Response: 200 http://example.com/ {"a":"15"}',[]]
+            );
+
+        $transport = $this->createTransport($client);
+
+        $transport->setBaseUri('http://example.com');
+
+        $transport->setLogger($logger);
+
+        $transport->post('/',['a'=>'15']);
     }
 }

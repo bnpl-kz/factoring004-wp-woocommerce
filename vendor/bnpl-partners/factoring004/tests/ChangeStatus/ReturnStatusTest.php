@@ -15,7 +15,7 @@ class ReturnStatusTest extends TestCase
 
     public function testPARTRETURN(): void
     {
-        $this->assertEquals(ReturnStatus::PARTRETURN(), ReturnStatus::from('partReturn'));
+        $this->assertEquals(ReturnStatus::PARTRETURN(), ReturnStatus::from('part_return'));
     }
 }
 

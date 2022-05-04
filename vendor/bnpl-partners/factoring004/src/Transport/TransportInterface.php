@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace BnplPartners\Factoring004\Transport;
 
 use BnplPartners\Factoring004\Auth\AuthenticationInterface;
+use Psr\Log\LoggerAwareInterface;
 
 /**
  * Abstraction layer over PSR-17 and PSR-18.
  */
-interface TransportInterface
+interface TransportInterface extends LoggerAwareInterface
 {
     /**
      * Base URI of endpoints.

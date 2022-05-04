@@ -246,6 +246,36 @@ var_dump(array_map(fn(ErrorResponse $response) => $response->getMessage(), $resp
 var_dump($response->toArray(), json_encode($response));
 ```
 
+Cancel
+
+```php
+use BnplPartners\Factoring004\ChangeStatus\ErrorResponse;
+use BnplPartners\Factoring004\ChangeStatus\MerchantsOrders;
+use BnplPartners\Factoring004\ChangeStatus\CancelOrder;
+use BnplPartners\Factoring004\ChangeStatus\CancelStatus;
+use BnplPartners\Factoring004\ChangeStatus\SuccessResponse;
+
+$orders = new MerchantsOrders('1', [new CancelOrder('1', CancelStatus::CANCEL())]);
+
+// or
+$orders = MerchantsOrders::createFromArray([
+    'merchantId' => '1',
+    'orders' => [
+        ['orderId' => '1', 'status' => 'canceled'],
+    ],
+]);
+
+// send request and receive response
+$response = $api->changeStatus->changeStatusJson($orders);
+
+var_dump(array_map(fn(SuccessResponse $response) => $response->getMsg(), $response->getSuccessfulResponses()));
+var_dump(array_map(fn(ErrorResponse $response) => $response->getMessage(), $response->getErrorResponses()));
+var_dump($response->toArray(), json_encode($response));
+
+
+```
+
+
 ### Error handling
 
 Whenever api returns an error client will throw an instance of ``BnplPartners\Factoring004\Exception\ApiException``.
