@@ -207,6 +207,41 @@ jQuery(function ($) {
         })
 
 
+        $(document).on('click','.do-api-cancel',function (e) {
+
+            let wpnonce = $('#factoring004_nonce').val();
+            let order_id = $('#post_ID').val();
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'factoring004_cancel',
+                    data: {
+                        order_id,
+                    },
+                    _nonce : wpnonce,
+                },
+                beforeSend: function () {
+                    block()
+                },
+                complete: function () {
+                    unblock()
+                },
+                success: function (response) {
+                    if (response) {
+                        window.location.reload()
+                    } else {
+                        alert('Что-то пошло не так! Попробуйте еще раз!')
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText)
+                }
+            })
+        })
+
+
     })
 })
 

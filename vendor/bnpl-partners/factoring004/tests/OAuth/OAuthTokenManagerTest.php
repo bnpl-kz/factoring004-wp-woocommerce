@@ -66,7 +66,7 @@ class OAuthTokenManagerTest extends TestCase
                         $consumerKey . ':' . $consumerSecret
                     )
                     && $request->getHeaderLine('Content-Type') === 'application/x-www-form-urlencoded'
-                    && $request->getBody()->getContents() === http_build_query($data);
+                    && strval($request->getBody()) === http_build_query($data);
             }))
             ->willReturn(new Response(200, [], json_encode($responseData)));
 

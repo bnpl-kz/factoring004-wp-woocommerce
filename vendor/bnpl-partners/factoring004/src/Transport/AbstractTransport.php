@@ -11,11 +11,16 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 
 abstract class AbstractTransport implements TransportInterface
 {
+    use LoggerAwareTrait;
+
     const METHODS_WITHOUT_BODY = ['GET', 'HEAD', 'OPTIONS', 'DELETE'];
     const DEFAULT_CONTENT_TYPE = 'application/json';
+    const LOGGER_PREFIX = 'bnpl-partners/factoring004';
 
     /**
      * @var array<string, string>
@@ -33,6 +38,7 @@ abstract class AbstractTransport implements TransportInterface
     public function __construct()
     {
         $this->authentication = new NoAuth();
+        $this->setLogger(new NullLogger());
     }
 
     /**
@@ -91,7 +97,29 @@ abstract class AbstractTransport implements TransportInterface
     public function request($method, $path, $data = [], $headers = []): ResponseInterface
     {
         $request = $this->prepareRequest(strtoupper($method), $path, $data, $headers);
+
+        /** @psalm-suppress PossiblyNullReference */
+        $this->logger->debug(
+            static::LOGGER_PREFIX . ': Request: ' .
+            sprintf(
+                '%s %s %s',
+                $request->getMethod(),
+                (string) $request->getUri(),
+                (string) $request->getBody()
+            )
+        );
+
         $response = $this->sendRequest($request);
+
+        $this->logger->debug(
+            static::LOGGER_PREFIX . ': Response: '.
+            sprintf(
+                '%d %s %s',
+                $response->getStatusCode(),
+                (string) $request->getUri(),
+                (string) $response->getBody()
+            )
+        );
 
         return $this->convertResponse($response);
     }
