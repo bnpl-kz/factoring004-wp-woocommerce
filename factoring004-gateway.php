@@ -395,6 +395,11 @@ function factoring004_init_gateway_class() {
                 ),
                 'agreement_file' => array(
                     'type'        => 'factoring004_agreement_file',
+                ),
+                'debug_mode' => array(
+                    'title'       => 'Включить/Выключить режим отладки',
+                    'label'       => ' ',
+                    'type'        => 'checkbox',
                 )
             );
         }
@@ -534,7 +539,11 @@ function factoring004_init_gateway_class() {
         public function process_payment($order_id)
         {
             $order = wc_get_order($order_id);
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('preapp_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('preapp_token'),
+                    $this->get_option('debug_mode') === 'yes'
+            );
 
             $redirectLink = $factoring004->preApp(
                 [
@@ -562,7 +571,11 @@ function factoring004_init_gateway_class() {
                 wp_send_json(false);
             }
 
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('delivery_token'),
+                $this->get_option('debug_mode') === 'yes'
+            );
 
             if (!$factoring004->sendOtpDelivery($this->get_option('partner_code'), $order)) {
                 wp_send_json(false);
@@ -586,7 +599,11 @@ function factoring004_init_gateway_class() {
 
             $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
 
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('delivery_token'),
+                $this->get_option('debug_mode') === 'yes'
+            );
 
             if (!$factoring004->sendOtpReturn($amount, $this->get_option('partner_code'), $order)) {
                 wp_send_json(false);
@@ -611,7 +628,11 @@ function factoring004_init_gateway_class() {
 
             $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
 
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'), $this->get_option('delivery_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('delivery_token'),
+                $this->get_option('debug_mode') === 'yes'
+            );
 
             if (!$factoring004->checkOtpReturn($amount, $this->get_option('partner_code'), $order, $data['otp_code'])) {
                 wp_send_json(false);
@@ -633,7 +654,11 @@ function factoring004_init_gateway_class() {
                 wp_send_json(false);
             }
 
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('delivery_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('delivery_token'),
+                    $this->get_option('debug_mode') === 'yes'
+            );
 
             if (!$factoring004->cancel($order, $this->get_option('partner_code'))) {
                 wp_send_json(false);
@@ -642,7 +667,6 @@ function factoring004_init_gateway_class() {
             $order->update_status('cancelled');
 
             wp_send_json(true);
-
         }
 
         /**
@@ -656,7 +680,11 @@ function factoring004_init_gateway_class() {
                 wp_send_json(false);
             }
 
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('delivery_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('delivery_token'),
+                $this->get_option('debug_mode') === 'yes'
+            );
 
             if (!$factoring004->delivery($data['order_id'],$this->get_option('partner_code'), $data['otp_code'])) {
                 wp_send_json(false);
@@ -675,7 +703,11 @@ function factoring004_init_gateway_class() {
         {
             $order = wc_get_order($order_id);
 
-            $factoring004 = new WC_Factoring004($this->get_option('api_host'),$this->get_option('delivery_token'));
+            $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('delivery_token'),
+                $this->get_option('debug_mode') === 'yes'
+            );
 
             if (!$factoring004->return($order, ceil($amount), $this->get_option('partner_code'))) {
                 return false;
