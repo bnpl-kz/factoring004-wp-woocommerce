@@ -1,6 +1,6 @@
 <?php
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
 require_once 'vendor/autoload.php';
 
@@ -22,6 +22,7 @@ use BnplPartners\Factoring004\PreApp\PreAppMessage;
 use BnplPartners\Factoring004\Transport\GuzzleTransport;
 use BnplPartners\Factoring004\Transport\TransportInterface;
 use Psr\Log\NullLogger;
+
 require_once 'factoring004-logger.php';
 
 final class WC_Factoring004
@@ -62,9 +63,9 @@ final class WC_Factoring004
                     return [
                         'itemId' => (string) $item->get_product_id(),
                         'itemName' => (string) $item->get_name(),
-                        'itemCategory' => implode(',',array_map(function ($cat) use ($item) {
+                        'itemCategory' => implode(',', array_map(function ($cat) use ($item) {
                             return $cat->name;
-                        }, get_the_terms($item->get_product_id(),'product_cat'))),
+                        }, get_the_terms($item->get_product_id(), 'product_cat'))),
                         'itemQuantity' => (int) $item->get_quantity(),
                         'itemPrice' => $item->get_quantity() > 1 ? (int) ceil($item->get_subtotal() / $item->get_quantity()) : (int) ceil($item->get_subtotal()),
                         'itemSum' => (int) ceil($item->get_total()),
@@ -83,37 +84,34 @@ final class WC_Factoring004
             ]);
 
             return $this->api->preApps->preApp($message)->getRedirectLink();
-
         } catch (PackageException $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             wc_add_notice('An error occurred!', 'error');
         }
-
     }
 
-    public function delivery($order_id, $partner_code, $otp_code)
+    public function delivery($order_id, $partner_code, $otp_code, $orderAmount)
     {
         if (!empty($otp_code)) {
-            return $this->checkOtpDelivery($order_id, $partner_code, $otp_code);
+            return $this->checkOtpDelivery($order_id, $partner_code, $otp_code, $orderAmount);
         }
 
         try {
             $response = $this->api->changeStatus->changeStatusJson([
                 new MerchantsOrders(
                     (string) $partner_code,
-                    [new DeliveryOrder((string) $order_id, DeliveryStatus::DELIVERY())]
+                    [new DeliveryOrder((string) $order_id, DeliveryStatus::DELIVERY(), $orderAmount)]
                 )
             ]);
 
             if ($response->getErrorResponses()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
@@ -125,25 +123,23 @@ final class WC_Factoring004
                 new MerchantsOrders(
                     $partner_code,
                     [
-                        new ReturnOrder
-                        (
-                            $order->get_id(),
-                            $amount > 0 ? ReturnStatus::PARTRETURN() : ReturnStatus::RETURN(),
-                            $this->getAmountRemaining($amount, $order->get_total())
-                        ),
+                        new ReturnOrder(
+                                $order->get_id(),
+                                $amount > 0 ? ReturnStatus::PARTRETURN() : ReturnStatus::RETURN(),
+                                $this->getAmountRemaining($amount, $order->get_total())
+                            ),
                     ],
                 ),
             ]);
 
             if ($response->getErrorResponses()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
@@ -159,14 +155,13 @@ final class WC_Factoring004
             ]);
 
             if ($response->getErrorResponses()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
@@ -174,19 +169,18 @@ final class WC_Factoring004
     public function sendOtpDelivery($partner_code, $order)
     {
         try {
-            $sendOtp = new SendOtp((string) $partner_code, (string) $order->get_id());
+            $sendOtp = new SendOtp((string) $partner_code, (string) $order->get_id(), (int) $order->get_total());
 
             $response = $this->api->otp->sendOtp($sendOtp);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
@@ -196,22 +190,21 @@ final class WC_Factoring004
         try {
 
             $sendOtpReturn = new SendOtpReturn(
-                    $this->getAmountRemaining($amount, ceil($order->get_total())),
-                    (string) $partner_code,
-                    (string) $order->get_id()
-                );
+                $this->getAmountRemaining($amount, ceil($order->get_total())),
+                (string) $partner_code,
+                (string) $order->get_id()
+            );
 
             $response = $this->api->otp->sendOtpReturn($sendOtpReturn);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
@@ -229,34 +222,32 @@ final class WC_Factoring004
             $response = $this->api->otp->checkOtpReturn($checkOtpReturn);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
 
-    private function checkOtpDelivery($order_id, $partner_code, $otp_code)
+    private function checkOtpDelivery($order_id, $partner_code, $otp_code, $orderAmount)
     {
         try {
-            $checkOtp = new CheckOtp((string)$partner_code, (string)$order_id, (string)$otp_code);
+            $checkOtp = new CheckOtp((string)$partner_code, (string)$order_id, (string)$otp_code, (int) $orderAmount);
 
             $response = $this->api->otp->checkOtp($checkOtp);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
                 return false;
             }
 
             return true;
-
         } catch (Exception $e) {
-            file_put_contents(__DIR__ .'/logs/'. date('Y-m-d').'.log',date('H-i-s').':'.PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
             throw $e;
         }
     }
