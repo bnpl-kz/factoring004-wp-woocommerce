@@ -10,10 +10,17 @@ class MerchantsOrdersTest extends TestCase
 {
     public function testCreateFromArray(): void
     {
-        $expected = new MerchantsOrders('1', [new DeliveryOrder('1000', DeliveryStatus::DELIVERY())]);
+        $expected = new MerchantsOrders('1', [new CancelOrder('1000', CancelStatus::CANCEL())]);
         $actual = MerchantsOrders::createFromArray([
             'merchantId' => '1',
-            'orders' => [['orderId' => '1000', 'status' => DeliveryStatus::DELIVERY()->getValue()]],
+            'orders' => [['orderId' => '1000', 'status' => CancelStatus::CANCEL()->getValue()]],
+        ]);
+        $this->assertEquals($expected, $actual);
+
+        $expected = new MerchantsOrders('1', [new DeliveryOrder('1000', DeliveryStatus::DELIVERY(), 6000)]);
+        $actual = MerchantsOrders::createFromArray([
+            'merchantId' => '1',
+            'orders' => [['orderId' => '1000', 'status' => DeliveryStatus::DELIVERY()->getValue(), 'amount' => 6000]],
         ]);
         $this->assertEquals($expected, $actual);
 
@@ -27,7 +34,7 @@ class MerchantsOrdersTest extends TestCase
 
     public function testGetMerchantId(): void
     {
-        $merchantOrders = new MerchantsOrders('1', [new DeliveryOrder('1000', DeliveryStatus::DELIVERY())]);
+        $merchantOrders = new MerchantsOrders('1', [new DeliveryOrder('1000', DeliveryStatus::DELIVERY(), 6000)]);
         $this->assertEquals('1', $merchantOrders->getMerchantId());
 
         $merchantOrders = new MerchantsOrders('100', [new ReturnOrder('1000', ReturnStatus::RETURN(), 6000)]);
@@ -40,8 +47,8 @@ class MerchantsOrdersTest extends TestCase
         $this->assertEmpty($merchantOrders->getOrders());
 
         $orders = [
-            new DeliveryOrder('1000', DeliveryStatus::DELIVERY()),
-            new DeliveryOrder('2000', DeliveryStatus::DELIVERY()),
+            new DeliveryOrder('1000', DeliveryStatus::DELIVERY(), 6000),
+            new DeliveryOrder('2000', DeliveryStatus::DELIVERY(), 6000),
         ];
         $merchantOrders = new MerchantsOrders('100', $orders);
         $this->assertEquals($orders, $merchantOrders->getOrders());
@@ -56,7 +63,7 @@ class MerchantsOrdersTest extends TestCase
 
     public function testToArray(): void
     {
-        $orders = [new DeliveryOrder('1000', DeliveryStatus::DELIVERY())];
+        $orders = [new DeliveryOrder('1000', DeliveryStatus::DELIVERY(), 6000)];
         $merchantOrders = new MerchantsOrders('1', $orders);
         $expected = [
             'merchantId' => '1',

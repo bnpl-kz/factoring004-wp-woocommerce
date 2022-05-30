@@ -127,10 +127,10 @@ Send OTP
 ```php
 use BnplPartners\Factoring004\Otp\SendOtp;
 
-$sendOtp = new SendOtp('1', '1');
+$sendOtp = new SendOtp('1', '1', 6000);
 
 // or
-$sendOtp = SendOtp::createFromArray(['merchantId' => '1', 'merchantOrderId' => '1']);
+$sendOtp = SendOtp::createFromArray(['merchantId' => '1', 'merchantOrderId' => '1', 'amount' => 6000]);
 
 // send request and receive response
 $response = $api->otp->sendOtp($sendOtp);
@@ -144,10 +144,10 @@ Check OTP
 ```php
 use BnplPartners\Factoring004\Otp\CheckOtp;
 
-$checkOtp = new CheckOtp('1', '1', '1111');
+$checkOtp = new CheckOtp('1', '1', '1111', 6000);
 
 // or
-$checkOtp = CheckOtp::createFromArray(['merchantId' => '1', 'merchantOrderId' => '1', 'otp' => '1111']);
+$checkOtp = CheckOtp::createFromArray(['merchantId' => '1', 'merchantOrderId' => '1', 'otp' => '1111', 'amount' => 6000]);
 
 // send request and receive response
 $response = $api->otp->checkOtp($checkOtp);
@@ -201,13 +201,13 @@ use BnplPartners\Factoring004\ChangeStatus\ErrorResponse;
 use BnplPartners\Factoring004\ChangeStatus\MerchantsOrders;
 use BnplPartners\Factoring004\ChangeStatus\SuccessResponse;
 
-$orders = new MerchantsOrders('1', [new DeliveryOrder('1', DeliveryStatus::DELIVERY())]);
+$orders = new MerchantsOrders('1', [new DeliveryOrder('1', DeliveryStatus::DELIVERY(), 6000)]);
 
 // or
 $orders = MerchantsOrders::createFromArray([
     'merchantId' => '1',
     'orders' => [
-        ['orderId' => '1', 'status' => 'delivery'],
+        ['orderId' => '1', 'status' => 'delivery', 'amount' => 6000],
     ],
 ]);
 

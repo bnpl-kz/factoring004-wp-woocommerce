@@ -16,7 +16,7 @@ class CheckOtpResourceTest extends AbstractResourceTest
      */
     public function testCheckOtp(): void
     {
-        $otp = new CheckOtp('1', '100', 'test');
+        $otp = new CheckOtp('1', '100', 'test', 6000);
 
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects($this->once())
@@ -33,6 +33,6 @@ class CheckOtpResourceTest extends AbstractResourceTest
     protected function callResourceMethod(ClientInterface $client): void
     {
         $resource = new OtpResource($this->createTransport($client), static::BASE_URI);
-        $resource->checkOtp(new CheckOtp('1', '100', 'test'));
+        $resource->checkOtp(new CheckOtp('1', '100', 'test', 6000));
     }
 }

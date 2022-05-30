@@ -7,12 +7,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/bnpl-partners/factoring004.git",
-                "reference": "9f341e81532e8e6e9b534dec71d8e50b6d1ff791"
+                "reference": "34290cdafacde70eb89796197b2f8f3b4ef54bf1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bnpl-partners/factoring004/zipball/9f341e81532e8e6e9b534dec71d8e50b6d1ff791",
-                "reference": "9f341e81532e8e6e9b534dec71d8e50b6d1ff791",
+                "url": "https://api.github.com/repos/bnpl-partners/factoring004/zipball/34290cdafacde70eb89796197b2f8f3b4ef54bf1",
+                "reference": "34290cdafacde70eb89796197b2f8f3b4ef54bf1",
                 "shasum": ""
             },
             "require": {
@@ -25,7 +25,7 @@
                 "psr/log": "^1.1",
                 "psr/simple-cache": "^1.0"
             },
-            "time": "2022-05-03T07:40:49+00:00",
+            "time": "2022-05-26T07:02:04+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -46,17 +46,17 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.4.2",
-            "version_normalized": "7.4.2.0",
+            "version": "7.4.3",
+            "version_normalized": "7.4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "ac1ec1cd9b5624694c3a40be801d94137afb12b4"
+                "reference": "74a8602c6faec9ef74b7a9391ac82c5e65b1cdab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/ac1ec1cd9b5624694c3a40be801d94137afb12b4",
-                "reference": "ac1ec1cd9b5624694c3a40be801d94137afb12b4",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/74a8602c6faec9ef74b7a9391ac82c5e65b1cdab",
+                "reference": "74a8602c6faec9ef74b7a9391ac82c5e65b1cdab",
                 "shasum": ""
             },
             "require": {
@@ -82,7 +82,7 @@
                 "ext-intl": "Required for Internationalized Domain Name (IDN) support",
                 "psr/log": "Required for using the Log middleware"
             },
-            "time": "2022-03-20T14:16:28+00:00",
+            "time": "2022-05-25T13:24:33+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -153,7 +153,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.4.2"
+                "source": "https://github.com/guzzle/guzzle/tree/7.4.3"
             },
             "funding": [
                 {
@@ -378,29 +378,29 @@
         },
         {
             "name": "myclabs/php-enum",
-            "version": "1.8.3",
-            "version_normalized": "1.8.3.0",
+            "version": "1.7.7",
+            "version_normalized": "1.7.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/php-enum.git",
-                "reference": "b942d263c641ddb5190929ff840c68f78713e937"
+                "reference": "d178027d1e679832db9f38248fcc7200647dc2b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/php-enum/zipball/b942d263c641ddb5190929ff840c68f78713e937",
-                "reference": "b942d263c641ddb5190929ff840c68f78713e937",
+                "url": "https://api.github.com/repos/myclabs/php-enum/zipball/d178027d1e679832db9f38248fcc7200647dc2b7",
+                "reference": "d178027d1e679832db9f38248fcc7200647dc2b7",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": "^7.3 || ^8.0"
+                "php": ">=7.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5",
+                "phpunit/phpunit": "^7",
                 "squizlabs/php_codesniffer": "1.*",
-                "vimeo/psalm": "^4.6.2"
+                "vimeo/psalm": "^3.8"
             },
-            "time": "2021-07-05T08:18:36+00:00",
+            "time": "2020-11-14T18:14:52+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -425,7 +425,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/php-enum/issues",
-                "source": "https://github.com/myclabs/php-enum/tree/1.8.3"
+                "source": "https://github.com/myclabs/php-enum/tree/1.7.7"
             },
             "funding": [
                 {
@@ -833,6 +833,6 @@
             "install-path": "../symfony/deprecation-contracts"
         }
     ],
-    "dev": false,
+    "dev": true,
     "dev-package-names": []
 }

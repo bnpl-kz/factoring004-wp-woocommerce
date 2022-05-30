@@ -36,9 +36,15 @@ class MerchantsOrders implements ArrayInterface
         return new self(
             $merchantsOrders['merchantId'],
             array_map(function (array $order) {
-                return array_key_exists('amount', $order)
-                    ? ReturnOrder::createFromArray($order)
-                    : DeliveryOrder::createFromArray($order);
+                if (!array_key_exists('amount', $order)) {
+                    return CancelOrder::createFromArray($order);
+                }
+
+                if (ReturnStatus::search($order['status']) !== false) {
+                    return ReturnOrder::createFromArray($order);
+                }
+
+                return DeliveryOrder::createFromArray($order);
             }, $merchantsOrders['orders'])
         );
     }
