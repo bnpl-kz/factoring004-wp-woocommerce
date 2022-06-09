@@ -251,7 +251,7 @@ function factoring004_init_gateway_class() {
     class WC_Factoring004_Gateway extends WC_Payment_Gateway
     {
 
-        const REQUIRED_FIELDS = ['billNumber', 'status', 'preappId'];
+        const REQUIRED_FIELDS = ['billNumber', 'status', 'preappId', 'signature'];
 
         const ZONE_NAME = 'Казахстан';
 
@@ -735,6 +735,15 @@ function factoring004_init_gateway_class() {
                 }
             }
 
+            $validator = new \BnplPartners\Factoring004\Signature\PostLinkSignatureValidator($this->get_option('partner_code'));
+
+            try {
+                $validator->validateData($request);
+            } catch (\BnplPartners\Factoring004\Exception\InvalidSignatureException $e) {
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+                wp_send_json(['success'=>false, 'error' => 'Invalid signature'],400);
+            }
+
             $order = wc_get_order($request['billNumber']);
 
             if (!$order) {
@@ -761,7 +770,6 @@ function factoring004_init_gateway_class() {
             }
 
             wp_send_json(['response' => 'ok'],200);
-
         }
 
         /**

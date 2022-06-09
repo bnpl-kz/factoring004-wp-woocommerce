@@ -28,7 +28,7 @@ require_once 'factoring004-logger.php';
 final class WC_Factoring004
 {
 
-    private $webhook_url = 'factoring004-payment-gateway';
+    private $webhook_url = 'factoring004-post-link';
 
     private $base_url;
 

@@ -16,7 +16,7 @@ class SendOtpResourceTest extends AbstractResourceTest
      */
     public function testSendOtp(): void
     {
-        $otp = new SendOtp('1', '100');
+        $otp = new SendOtp('1', '100', 6000);
 
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects($this->once())
@@ -33,6 +33,6 @@ class SendOtpResourceTest extends AbstractResourceTest
     protected function callResourceMethod(ClientInterface $client): void
     {
         $resource = new OtpResource($this->createTransport($client), static::BASE_URI);
-        $resource->sendOtp(new SendOtp('1', '100'));
+        $resource->sendOtp(new SendOtp('1', '100', 6000));
     }
 }
