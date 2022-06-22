@@ -126,7 +126,7 @@ final class WC_Factoring004
                         new ReturnOrder(
                                 $order->get_id(),
                                 $amount > 0 ? ReturnStatus::PARTRETURN() : ReturnStatus::RETURN(),
-                                $this->getAmountRemaining($amount, $order->get_total())
+                                $this->getAmountRemaining($amount, $order->get_total() - $order->get_total_refunded())
                             ),
                     ],
                 ),
@@ -190,7 +190,7 @@ final class WC_Factoring004
         try {
 
             $sendOtpReturn = new SendOtpReturn(
-                $this->getAmountRemaining($amount, ceil($order->get_total())),
+                $this->getAmountRemaining($amount, ceil($order->get_total() - $order->get_total_refunded())),
                 (string) $partner_code,
                 (string) $order->get_id()
             );
@@ -213,7 +213,7 @@ final class WC_Factoring004
     {
         try {
             $checkOtpReturn = new CheckOtpReturn(
-                $this->getAmountRemaining($amount, ceil($order->get_total())),
+                $this->getAmountRemaining($amount, ceil($order->get_total() - $order->get_total_refunded())),
                 (string) $partner_code,
                 (string) $order->get_id(),
                 $otp_code

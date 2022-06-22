@@ -638,7 +638,9 @@ function factoring004_init_gateway_class() {
                 wp_send_json(false);
             }
 
-            $order->update_status('refunded');
+            if ($amount) {
+                wc_create_refund(['amount' => $amount, 'order_id' => $data['order_id']]);
+            }
 
             wp_send_json(true);
         }
