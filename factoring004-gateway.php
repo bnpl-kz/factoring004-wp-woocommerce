@@ -448,7 +448,7 @@ function factoring004_init_gateway_class() {
             ?>
             <tr valign="top">
                     <th scope="row" class="titledesc">
-                        <label for="woocommerce_factoring004_delivery_items">Способы доставки для подтверждения через смс</label>
+                        <label for="woocommerce_factoring004_delivery_items">Способы доставки</label>
                     </th>
                     <td class="forminp">
                         <fieldset>
