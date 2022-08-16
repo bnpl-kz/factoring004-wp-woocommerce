@@ -24,7 +24,7 @@ function create_table_factoring004_payment_gateway()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'factoring004_order_preapps';
-        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
                      `id` INT NOT NULL AUTO_INCREMENT, 
                      `order_id` INT NOT NULL,
                      `preapp_uid` VARCHAR(255) NOT NULL, 
@@ -83,7 +83,6 @@ function action_woocommerce_order_item_add_action_buttons($order)
 
 }
 
-
 /**
  * Этот хук действия регистрирует функцию для работы с условиями отображения платежа
  */
@@ -105,7 +104,6 @@ function disable_factoring004_above_6000_or_below_200000($available_gateways)
 }
 
 add_action('plugins_loaded', 'factoring004_init_gateway_class');
-
 
 /**
  * Хук регистрации обработчика отмены
@@ -261,7 +259,7 @@ function factoring004_init_gateway_class() {
         public function __construct()
         {
             $this->id = 'factoring004'; // id плагина платежного шлюза
-            $this->icon = apply_filters('woocommerce_gateway_icon', plugin_dir_url('factoring004-gateway/assets/images/factoring004.svg').'factoring004.svg'); // URL значка, который будет отображаться на странице оформления заказа рядом с именем вашего шлюза
+//            $this->icon = apply_filters('woocommerce_gateway_icon', plugin_dir_url('factoring004-gateway/assets/images/factoring004.svg').'factoring004.svg'); // URL значка, который будет отображаться на странице оформления заказа рядом с именем вашего шлюза
             $this->has_fields = false; // если вам нужна индивидуальная форма кредитной карты
             $this->method_title = 'Рассрочка 0-0-4'; // заголовок
             $this->method_description = 'Купи сейчас, плати потом! Быстрое и удобное оформление рассрочки на 4 месяца без первоначальной оплаты. Моментальное подтверждение, без комиссий и процентов. Для заказов суммой от 6000 до 200000 тг.'; // описание
@@ -319,15 +317,15 @@ function factoring004_init_gateway_class() {
             $this->set_post_data(array_merge($data,
                 [
                     'woocommerce_factoring004_agreement_file'
-                        => isset($_FILES['woocommerce_factoring004_agreement_file'])
+                    => isset($_FILES['woocommerce_factoring004_agreement_file'])
                         ?
-                            $this->uploadAgreementFile($_FILES['woocommerce_factoring004_agreement_file'])
+                        $this->uploadAgreementFile($_FILES['woocommerce_factoring004_agreement_file'])
                         :
-                            $data['woocommerce_factoring004_agreement_file'],
+                        $data['woocommerce_factoring004_agreement_file'],
                     'woocommerce_factoring004_delivery_items'
-                        => isset($data['woocommerce_factoring004_delivery_items'])
+                    => isset($data['woocommerce_factoring004_delivery_items'])
                         ?
-                            implode(',',$data['woocommerce_factoring004_delivery_items'])
+                        implode(',',$data['woocommerce_factoring004_delivery_items'])
                         :
                         ''
                 ]));
@@ -411,30 +409,30 @@ function factoring004_init_gateway_class() {
         {
             ob_start();
             ?>
-                <tr valign="top">
-                    <th scope="row" class="titledesc">
-                        <label for="woocommerce_factoring004_agreement_file">Файл оферты</label>
-                    </th>
-                    <td class="forminp">
-                        <fieldset>
-                            <?php if ($this->get_option('agreement_file')):  ?>
-                                <label for="woocommerce_factoring004_agreement_file">
-                                    <a target="_blank" href="<?php echo wp_upload_dir()['baseurl'].'/'.$this->get_option('agreement_file');  ?>" class="button-primary">Просмотреть</a>
-                                    <button id="factoring004-button-delete" data-filename="<?php echo $this->get_option('agreement_file');  ?>" class="button-primary" type="button">Удалить</button>
-                                    <input type="hidden" name="woocommerce_factoring004_agreement_file" value="<?php echo $this->get_option('agreement_file');  ?>">
-                                    <?php wp_nonce_field() ?>
-                                </label>
-                            <?php else: ?>
-                                <label for="woocommerce_factoring004_agreement_file">
-                                    <button class="button-primary" onclick="document.getElementById('woocommerce_factoring004_agreement_file').click()" type="button" id="factoring004-agreement-file-button">Выбрать файл</button>
-                                    <input style="display: none;" type="file" name="woocommerce_factoring004_agreement_file" id="woocommerce_factoring004_agreement_file">
-                                </label>
-                                <p>Загрузите файл оферты, если вам необходимо его отобразить клиенту</p>
-                            <?php endif; ?>
-                            <br>
-                        </fieldset>
-                    </td>
-                </tr>
+            <tr valign="top">
+                <th scope="row" class="titledesc">
+                    <label for="woocommerce_factoring004_agreement_file">Файл оферты</label>
+                </th>
+                <td class="forminp">
+                    <fieldset>
+                        <?php if ($this->get_option('agreement_file')):  ?>
+                            <label for="woocommerce_factoring004_agreement_file">
+                                <a target="_blank" href="<?php echo wp_upload_dir()['baseurl'].'/'.$this->get_option('agreement_file');  ?>" class="button-primary">Просмотреть</a>
+                                <button id="factoring004-button-delete" data-filename="<?php echo $this->get_option('agreement_file');  ?>" class="button-primary" type="button">Удалить</button>
+                                <input type="hidden" name="woocommerce_factoring004_agreement_file" value="<?php echo $this->get_option('agreement_file');  ?>">
+                                <?php wp_nonce_field() ?>
+                            </label>
+                        <?php else: ?>
+                            <label for="woocommerce_factoring004_agreement_file">
+                                <button class="button-primary" onclick="document.getElementById('woocommerce_factoring004_agreement_file').click()" type="button" id="factoring004-agreement-file-button">Выбрать файл</button>
+                                <input style="display: none;" type="file" name="woocommerce_factoring004_agreement_file" id="woocommerce_factoring004_agreement_file">
+                            </label>
+                            <p>Загрузите файл оферты, если вам необходимо его отобразить клиенту</p>
+                        <?php endif; ?>
+                        <br>
+                    </fieldset>
+                </td>
+            </tr>
             <?php
             return ob_get_clean();
         }
@@ -447,29 +445,29 @@ function factoring004_init_gateway_class() {
             ob_start();
             ?>
             <tr valign="top">
-                    <th scope="row" class="titledesc">
-                        <label for="woocommerce_factoring004_delivery_items">Способы доставки</label>
-                    </th>
-                    <td class="forminp">
-                        <fieldset>
-                            <label for="woocommerce_factoring004_delivery_items">
-                                <?php foreach ($this->getDeliveryItems() as $delivery): ?>
-                                    <label style="display: block">
-                                        <input
-                                            <?php foreach (explode(',', $this->get_option('delivery_items')) as $item): ?>
-                                                <?php if ($item === $delivery['id']): ?>
-                                                    checked
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
+                <th scope="row" class="titledesc">
+                    <label for="woocommerce_factoring004_delivery_items">Способы доставки</label>
+                </th>
+                <td class="forminp">
+                    <fieldset>
+                        <label for="woocommerce_factoring004_delivery_items">
+                            <?php foreach ($this->getDeliveryItems() as $delivery): ?>
+                                <label style="display: block">
+                                    <input
+                                        <?php foreach (explode(',', $this->get_option('delivery_items')) as $item): ?>
+                                            <?php if ($item === $delivery['id']): ?>
+                                                checked
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
                                             type="checkbox" name="woocommerce_factoring004_delivery_items[]" value="<?php echo $delivery['id'] ?>">
-                                        <?php echo $delivery['name'] ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </label>
-                            <br>
-                        </fieldset>
-                    </td>
-                </tr>
+                                    <?php echo $delivery['name'] ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </label>
+                        <br>
+                    </fieldset>
+                </td>
+            </tr>
             <?php
             return ob_get_clean();
         }
@@ -479,9 +477,22 @@ function factoring004_init_gateway_class() {
          */
         public function payment_fields()
         {
+            global $woocommerce;
+
             if ($this->description) {
                 echo wpautop(wp_kses_post($this->description));
             }
+
+            echo '<link rel="stylesheet" href='.plugins_url('factoring004-gateway/assets/css/factoring004-paymentschedule.css').'><div id="factoring004-paymentschedule"></div><script type="text/javascript" src='.plugins_url('factoring004-gateway/assets/js/factoring004-paymentschedule.js').'></script>
+                   <script>
+                       jQuery(function ($) {
+                           let sum = "'. (int)strip_tags($woocommerce->cart->get_cart_total()). '";
+                           console.log(sum)
+                           const t = new Factoring004.PaymentSchedule({ elemId:"factoring004-paymentschedule", totalAmount: sum });
+                           t.render();
+                       })
+                   </script>
+                   ';
         }
 
         /**
@@ -491,13 +502,13 @@ function factoring004_init_gateway_class() {
         {
             wp_enqueue_script(
                 'woocommerce_factoring004_admin',
-                plugin_dir_url('factoring004-gateway/assets/js/factoring004.js').'factoring004.js',
+                plugins_url('factoring004-gateway/assets/js/factoring004.js'),
                 array(), false, true
             );
             wp_enqueue_style(
                 'woocommerce_factoring004',
-                plugin_dir_url('factoring004-gateway/assets/css/factoring004.css').'factoring004.css',
-                array(),false,'all'
+                plugins_url('factoring004-gateway/assets/css/factoring004.css'),
+                array()
             );
         }
 
@@ -514,7 +525,7 @@ function factoring004_init_gateway_class() {
             }
 
             wp_enqueue_script(
-                    'woocommerce_factoring004_admin',
+                'woocommerce_factoring004_admin',
                 plugin_dir_url('factoring004-gateway/assets/js/factoring004-admin.js').'factoring004-admin.js',
                 array(), false, true
             );
@@ -522,7 +533,7 @@ function factoring004_init_gateway_class() {
         }
 
         /**
-          * Валидация полей чекаута
+         * Валидация полей чекаута
          */
         public function validate_fields()
         {
@@ -540,9 +551,9 @@ function factoring004_init_gateway_class() {
         {
             $order = wc_get_order($order_id);
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('preapp_token'),
-                    $this->get_option('debug_mode') === 'yes'
+                $this->get_option('api_host'),
+                $this->get_option('preapp_token'),
+                $this->get_option('debug_mode') === 'yes'
             );
 
             $redirectLink = $factoring004->preApp(
@@ -562,7 +573,6 @@ function factoring004_init_gateway_class() {
             );
         }
 
-
         public function send_otp_delivery($data)
         {
             $order = wc_get_order($data['order_id']);
@@ -572,8 +582,8 @@ function factoring004_init_gateway_class() {
             }
 
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('delivery_token'),
+                $this->get_option('api_host'),
+                $this->get_option('delivery_token'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -600,8 +610,8 @@ function factoring004_init_gateway_class() {
             $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
 
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('delivery_token'),
+                $this->get_option('api_host'),
+                $this->get_option('delivery_token'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -629,8 +639,8 @@ function factoring004_init_gateway_class() {
             $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
 
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('delivery_token'),
+                $this->get_option('api_host'),
+                $this->get_option('delivery_token'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -655,9 +665,9 @@ function factoring004_init_gateway_class() {
             }
 
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('delivery_token'),
-                    $this->get_option('debug_mode') === 'yes'
+                $this->get_option('api_host'),
+                $this->get_option('delivery_token'),
+                $this->get_option('debug_mode') === 'yes'
             );
 
             if (!$factoring004->cancel($order, $this->get_option('partner_code'))) {
@@ -681,8 +691,8 @@ function factoring004_init_gateway_class() {
             }
 
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('delivery_token'),
+                $this->get_option('api_host'),
+                $this->get_option('delivery_token'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -704,8 +714,8 @@ function factoring004_init_gateway_class() {
             $order = wc_get_order($order_id);
 
             $factoring004 = new WC_Factoring004(
-                    $this->get_option('api_host'),
-                    $this->get_option('delivery_token'),
+                $this->get_option('api_host'),
+                $this->get_option('delivery_token'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
