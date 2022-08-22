@@ -648,7 +648,9 @@ function factoring004_init_gateway_class() {
                 wp_send_json(false);
             }
 
-            $order->update_status('refunded');
+            if ($amount) {
+                wc_create_refund(['amount' => $amount, 'order_id' => $data['order_id']]);
+            }
 
             wp_send_json(true);
         }
@@ -812,7 +814,7 @@ function factoring004_init_gateway_class() {
             $filename = '';
             if ($agreement_file['tmp_name']) {
                 $ext = pathinfo($agreement_file['name'], PATHINFO_EXTENSION);
-                $filename = basename($agreement_file['name'],'.'.$ext) . '_' . uniqid(rand(), true) . '.' . $ext;
+                $filename = 'factoring004-agreement-' . uniqid(rand(), true) . '.' . $ext;
                 move_uploaded_file($agreement_file['tmp_name'], wp_upload_dir()['basedir'].'/' . $filename);
             }
             return $filename;
