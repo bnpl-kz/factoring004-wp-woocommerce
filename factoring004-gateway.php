@@ -537,7 +537,7 @@ function factoring004_init_gateway_class() {
          */
         public function validate_fields()
         {
-            if (empty($_POST['checkout_factoring004_agreement'])) {
+            if (isset($_POST['checkout_factoring004_agreement']) && empty($_POST['checkout_factoring004_agreement'])) {
                 wc_add_notice('Вам необходимо согласиться с условиями!', 'error');
                 return false;
             }
@@ -550,27 +550,35 @@ function factoring004_init_gateway_class() {
         public function process_payment($order_id)
         {
             $order = wc_get_order($order_id);
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('preapp_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
 
-            $redirectLink = $factoring004->preApp(
-                [
-                    'partnerName' => $this->get_option('partner_name'),
-                    'partnerCode' => $this->get_option('partner_code'),
-                    'pointCode' => $this->get_option('point_code'),
-                    'partnerEmail' => $this->get_option('partner_email'),
-                    'partnerWebsite' => $this->get_option('partner_website'),
-                ],
-                $order
-            );
+            try {
+                $factoring004 = new WC_Factoring004(
+                    $this->get_option('api_host'),
+                    $this->get_option('preapp_token'),
+                    $this->get_option('debug_mode') === 'yes'
+                );
 
-            return array(
-                'result' => 'success',
-                'redirect' => $redirectLink
-            );
+                $redirectLink = $factoring004->preApp(
+                    [
+                        'partnerName' => $this->get_option('partner_name'),
+                        'partnerCode' => $this->get_option('partner_code'),
+                        'pointCode' => $this->get_option('point_code'),
+                        'partnerEmail' => $this->get_option('partner_email'),
+                        'partnerWebsite' => $this->get_option('partner_website'),
+                    ],
+                    $order
+                );
+
+                return array(
+                    'result' => 'success',
+                    'redirect' => $redirectLink
+                );
+
+            } catch (Exception $e) {
+                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+                wc_add_notice('Технические доработки. Улучшаем сервис для Вас. Попробуйте оформить покупку позднее.', 'error');
+                return;
+            }
         }
 
         public function send_otp_delivery($data)
