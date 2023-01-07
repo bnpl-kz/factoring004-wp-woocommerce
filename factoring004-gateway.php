@@ -16,39 +16,6 @@ defined('ABSPATH') || exit;
 session_start();
 
 /**
- * Хук для создания таблиц в бд, срабатывает в момент активации плагина
- */
-register_activation_hook(__FILE__, 'create_table_factoring004_payment_gateway');
-
-function create_table_factoring004_payment_gateway()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'factoring004_order_preapps';
-    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
-                     `id` INT NOT NULL AUTO_INCREMENT, 
-                     `order_id` INT NOT NULL,
-                     `preapp_uid` VARCHAR(255) NOT NULL, 
-                     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                     PRIMARY KEY (`id`),
-                     CONSTRAINT unique_$table_name UNIQUE (order_id, preapp_uid)
-                     ) ENGINE = InnoDB;";
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
-}
-
-/**
- * Хук для удаления таблиц в бд, срабатывает в момент деактивации плагина
- */
-register_deactivation_hook(__FILE__, 'drop_table_factoring004_payment_gateway');
-
-function drop_table_factoring004_payment_gateway()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'factoring004_order_preapps';
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-}
-
-/**
  * Хук действия регистрирует класс PHP как платежный шлюз WooCommerce.
  */
 add_filter('woocommerce_payment_gateways', 'factoring004_add_gateway_class');
@@ -575,8 +542,14 @@ function factoring004_init_gateway_class() {
                 );
 
             } catch (Exception $e) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
-                wc_add_notice('Технические доработки. Улучшаем сервис для Вас. Попробуйте оформить покупку позднее.', 'error');
+                file_put_contents(
+                        __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                        date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+                );
+                wc_add_notice(
+                        'Технические доработки. Улучшаем сервис для Вас. Попробуйте оформить покупку позднее.',
+                        'error'
+                );
                 return;
             }
         }
@@ -755,12 +728,17 @@ function factoring004_init_gateway_class() {
                 }
             }
 
-            $validator = new \BnplPartners\Factoring004\Signature\PostLinkSignatureValidator($this->get_option('partner_code'));
+            $validator = new \BnplPartners\Factoring004\Signature\PostLinkSignatureValidator(
+                    $this->get_option('partner_code')
+            );
 
             try {
                 $validator->validateData($request);
             } catch (\BnplPartners\Factoring004\Exception\InvalidSignatureException $e) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                        __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                        date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+                );
                 wp_send_json(['success'=>false, 'error' => 'Invalid signature'],400);
             }
 
@@ -777,19 +755,10 @@ function factoring004_init_gateway_class() {
                 wp_send_json(['response' => 'declined'],200);
             } elseif ($request['status'] === 'completed') {
                 $order->update_status('processing');
+                wp_send_json(['response' => 'ok'],200);
             } else {
                 wp_send_json(['success' => false, 'error' => 'Unexpected status'], 400);
             }
-
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'factoring004_order_preapps';
-            $result = $wpdb->insert("$table_name", array('order_id'=>$request['billNumber'], 'preapp_uid'=>$request['preappId']));
-
-            if (!$result) {
-                wp_send_json(['success' => false, 'error' => 'An error occurred'], 500);
-            }
-
-            wp_send_json(['response' => 'ok'],200);
         }
 
         /**
