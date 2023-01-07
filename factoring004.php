@@ -13,7 +13,6 @@ use BnplPartners\Factoring004\ChangeStatus\DeliveryStatus;
 use BnplPartners\Factoring004\ChangeStatus\MerchantsOrders;
 use BnplPartners\Factoring004\ChangeStatus\ReturnOrder;
 use BnplPartners\Factoring004\ChangeStatus\ReturnStatus;
-use BnplPartners\Factoring004\Exception\PackageException;
 use BnplPartners\Factoring004\Otp\CheckOtp;
 use BnplPartners\Factoring004\Otp\CheckOtpReturn;
 use BnplPartners\Factoring004\Otp\SendOtp;
@@ -66,7 +65,9 @@ final class WC_Factoring004
                         return $cat->name;
                     }, get_the_terms($item->get_product_id(), 'product_cat'))),
                     'itemQuantity' => (int) $item->get_quantity(),
-                    'itemPrice' => $item->get_quantity() > 1 ? (int) ceil($item->get_subtotal() / $item->get_quantity()) : (int) ceil($item->get_subtotal()),
+                    'itemPrice' => $item->get_quantity() > 1
+                        ? (int) ceil($item->get_subtotal() / $item->get_quantity())
+                        : (int) ceil($item->get_subtotal()),
                     'itemSum' => (int) ceil($item->get_total()),
                 ];
             }, $order->get_items())),
@@ -100,13 +101,19 @@ final class WC_Factoring004
             ]);
 
             if ($response->getErrorResponses()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
@@ -128,13 +135,19 @@ final class WC_Factoring004
             ]);
 
             if ($response->getErrorResponses()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
@@ -150,13 +163,19 @@ final class WC_Factoring004
             ]);
 
             if ($response->getErrorResponses()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
@@ -169,13 +188,19 @@ final class WC_Factoring004
             $response = $this->api->otp->sendOtp($sendOtp);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
@@ -193,13 +218,19 @@ final class WC_Factoring004
             $response = $this->api->otp->sendOtpReturn($sendOtpReturn);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
@@ -217,13 +248,19 @@ final class WC_Factoring004
             $response = $this->api->otp->checkOtpReturn($checkOtpReturn);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
@@ -236,13 +273,19 @@ final class WC_Factoring004
             $response = $this->api->otp->checkOtp($checkOtp);
 
             if ($response->isError()) {
-                file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND);
+                file_put_contents(
+                    __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                    date('H-i-s') . ':' . PHP_EOL . json_encode($response) . PHP_EOL, FILE_APPEND
+                );
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/logs/' . date('Y-m-d') . '.log', date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND);
+            file_put_contents(
+                __DIR__ . '/logs/' . date('Y-m-d') . '.log',
+                date('H-i-s') . ':' . PHP_EOL . $e . PHP_EOL, FILE_APPEND
+            );
             throw $e;
         }
     }
