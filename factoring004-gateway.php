@@ -264,6 +264,38 @@ function factoring004_init_gateway_class() {
                 add_action('woocommerce_review_order_before_submit', array($this,'bt_add_checkout_checkbox'));
             }
 
+            // Регистрация js на странице checkout
+            if ($this->get_option('client_route') === 'modal') {
+                add_action('wp_footer', array($this, 'factoring004_add_jscript_checkout'), 9999);
+            }
+        }
+
+        public function factoring004_add_jscript_checkout()
+        {
+            if ($this->get_option('client_route') === 'modal') {
+                $domain = stripos($this->get_option('api_host'), 'dev') ? 'dev.bnpl.kz' : 'bnpl.kz';
+                echo "<script defer src='https://$domain/widget/index_bundle.js'></script><div id='modal-factoring004'></div>
+                    <script>
+                        jQuery(function($) {
+                            $(document).on('click','#place_order', function () {
+                                $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
+                                    const bnplKzApi = new BnplKzApi.CPO({
+                                      rootId: 'modal-factoring004',
+                                      callbacks: {
+                                        onError: () => window.location.replace(XMLHttpRequest.responseJSON.redirectLink),
+                                        onDeclined: () => window.location.replace('/'),
+                                        onEnd: () => window.location.replace('/'),
+                                      }
+                                    });
+                                    bnplKzApi.render({
+                                        redirectLink: XMLHttpRequest.responseJSON.redirectLink
+                                    });
+                                })
+                            })
+                        })
+                    </script>
+                ";
+            }
         }
 
         public function bt_add_checkout_checkbox()
@@ -361,12 +393,41 @@ function factoring004_init_gateway_class() {
                 'agreement_file' => array(
                     'type'        => 'factoring004_agreement_file',
                 ),
+                'client_route' => array(
+                    'type'        => 'factoring004_client_route',
+                ),
                 'debug_mode' => array(
                     'title'       => 'Включить/Выключить режим отладки',
                     'label'       => ' ',
                     'type'        => 'checkbox',
                 )
             );
+        }
+
+        /**
+         * Создаем кастомное поле для выбора интерфейсного пути
+         */
+        public function generate_factoring004_client_route_html()
+        {
+            ob_start();
+            ?>
+                <tr valign="top">
+                    <th scope="row" class="titledesc">
+                        <label for="woocommerce_factoring004_client_route">Вид интерфейса клиентского пути</label>
+                    </th>
+                    <td class="forminp">
+                        <fieldset>
+                            <label for="woocommerce_factoring004_client_route">
+                                <select name="woocommerce_factoring004_client_route">
+                                    <option <?php if ($this->get_option('client_route') === 'redirect') echo 'selected'; ?> value="redirect">Редирект</option>
+                                    <option <?php if ($this->get_option('client_route') === 'modal') echo 'selected'; ?> value="modal">Модальное окно</option>
+                                </select>
+                            </label>
+                        </fieldset>
+                    </td>
+                </tr>
+            <?php
+            return ob_get_clean();
         }
 
         /**
@@ -454,7 +515,6 @@ function factoring004_init_gateway_class() {
                    <script>
                        jQuery(function ($) {
                            let sum = "'. (int)strip_tags($woocommerce->cart->get_cart_total()). '";
-                           console.log(sum)
                            const t = new Factoring004.PaymentSchedule({ elemId:"factoring004-paymentschedule", totalAmount: sum });
                            t.render();
                        })
@@ -538,7 +598,8 @@ function factoring004_init_gateway_class() {
 
                 return array(
                     'result' => 'success',
-                    'redirect' => $redirectLink
+                    'redirect' => $this->get_option('client_route') === 'modal' ? false : $redirectLink,
+                    'redirectLink' => $redirectLink
                 );
 
             } catch (Exception $e) {
