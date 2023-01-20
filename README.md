@@ -21,7 +21,7 @@
 страница настройки модуля.
 
 
-![Setup-2](https://github.com/bnpl-partners/factoring004-wp-woocommerce/raw/main/doc/payment_fields.png)
+![Setup-2](https://github.com/bnpl-partners/factoring004-wp-woocommerce/raw/main/doc/payment_fields1.png)
 
 * Получите данные от АПИ платежной системы
 * Заполните данные
