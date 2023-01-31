@@ -1,5 +1,5 @@
 {
     "require": {
-        "bnpl-partners/factoring004": "dev-legacy"
+        "bnpl-partners/factoring004": "^0.1 || ^1.0"
     }
 }

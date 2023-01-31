@@ -3,7 +3,8 @@
 ## Установка
 
 * Создайте резервную копию вашего магазина и базы данных
-* Загрузите [woocommerce-factoring004.zip](https://github.com/bnpl-partners/factoring004-wp-woocommerce.git?raw=true)
+* Загрузите [woocommerce-factoring004.zip](https://github.com//bnpl-kz/factoring004-wp-woocommerce/archive/refs/heads/main.zip)
+* Разархивируйте архив, затем переименуйте папку **factoring004-gateway** и заново заархивируйте
 * Зайдите в панель администратора Wordpress (www.yoursite.com/wp-admin/)
 * Выберите _Плагины → Добавить новый_
 * Загрузите модуль через **Добавить новый**
