@@ -27,30 +27,6 @@ function factoring004_add_gateway_class($gateways)
 }
 
 /**
- * хук вывода кнопки в деталях заказа для обработки доставки
- */
-add_action('woocommerce_order_item_add_action_buttons', 'action_woocommerce_order_item_add_action_buttons', 10, 1);
-
-function action_woocommerce_order_item_add_action_buttons($order)
-{
-    $screen    = get_current_screen();
-    $screen_id = $screen ? $screen->id : '';
-
-    if ($screen_id !== 'shop_order') {
-        return;
-    }
-
-    $payment_method = $order->get_payment_method();
-    $order_current_status = $order->get_status();
-
-    if ($payment_method === 'factoring004' && $order_current_status === 'processing') {
-        echo '<button class="button generate-items do-api-delivery" type="button">Доставка (Рассрочка 0-0-4)</button>';
-        echo '<button class="button generate-items do-api-cancel" type="button">Отмена (Рассрочка 0-0-4)</button>';
-    }
-
-}
-
-/**
  * Этот хук действия регистрирует функцию для работы с условиями отображения платежа
  */
 
@@ -71,145 +47,6 @@ function disable_factoring004_above_6000_or_below_200000($available_gateways)
 }
 
 add_action('plugins_loaded', 'factoring004_init_gateway_class');
-
-/**
- * Хук регистрации обработчика отмены
- */
-
-add_action('wp_ajax_factoring004_cancel', 'factoring004_cancel_callback');
-
-function factoring004_cancel_callback()
-{
-    if (!wp_verify_nonce($_POST['_nonce'])) {
-        wp_die(0,400);
-    }
-
-    $data = $_POST['data'];
-
-    call_user_func(array(new WC_Factoring004_Gateway,'process_cancel'),$data);
-}
-
-/**
- * Хук регистрации обработчика вовзрата отправки смс
- */
-
-add_action('wp_ajax_factoring004_send_otp_return', 'factoring004_send_otp_return_callback');
-
-function factoring004_send_otp_return_callback()
-{
-    if (!wp_verify_nonce($_POST['_nonce'])) {
-        wp_die(0,400);
-    }
-
-    $data = $_POST['data'];
-
-    call_user_func(array(new WC_Factoring004_Gateway,'send_otp_return'),$data);
-}
-
-/**
- * Хук регистрации обработчика вовзрата проверки смс кода
- */
-
-add_action('wp_ajax_factoring004_check_otp_return', 'factoring004_check_otp_return_callback');
-
-function factoring004_check_otp_return_callback()
-{
-    if (!wp_verify_nonce($_POST['_nonce'])) {
-        wp_die(0,400);
-    }
-
-    $data = $_POST['data'];
-
-    call_user_func(array(new WC_Factoring004_Gateway,'check_otp_return'),$data);
-}
-
-/**
- * Хук регистрации обработчика доставки отправки смс
- */
-
-add_action('wp_ajax_factoring004_send_otp_delivery', 'factoring004_send_otp_delivery_callback');
-
-function factoring004_send_otp_delivery_callback()
-{
-    if (!wp_verify_nonce($_POST['_nonce'])) {
-        wp_die(0,400);
-    }
-
-    $data = $_POST['data'];
-
-    call_user_func(array(new WC_Factoring004_Gateway,'send_otp_delivery'),$data);
-}
-
-/**
- * Хук регистрации обработчика доставки
- */
-
-add_action('wp_ajax_factoring004_delivery', 'factoring004_with_or_without_otp_delivery_callback');
-
-function factoring004_with_or_without_otp_delivery_callback()
-{
-    if (!wp_verify_nonce($_POST['_nonce'])) {
-        wp_die(0,400);
-    }
-
-    $data = $_POST['data'];
-
-    call_user_func(array(new WC_Factoring004_Gateway,'process_delivery'),$data);
-}
-
-/**
- * Хук регистрации обработчика удаления файла
- */
-
-add_action('wp_ajax_factoring004_agreement_destroy', 'factoring004_agreement_destroy_callback');
-
-function factoring004_agreement_destroy_callback()
-{
-    if (!wp_verify_nonce($_POST['_nonce'])) {
-        wp_die(0,400);
-    }
-
-    $filename = $_POST['filename'];
-
-    call_user_func(array(new WC_Factoring004_Gateway,'destroyAgreementFile'),$filename);
-}
-
-/**
- * Хук для добавления кастомных ассетов
- */
-add_action('admin_head', 'add_custom_assets');
-
-function add_custom_assets()
-{
-    $screen    = get_current_screen();
-    $screen_id = $screen ? $screen->id : '';
-
-    if ($screen_id !== 'shop_order') {
-        return;
-    }
-
-    wp_enqueue_style(
-        'woocommerce_factoring004_admin',
-        plugin_dir_url('factoring004-gateway/assets/css/factoring004-admin-orders.css').'factoring004-admin-orders.css',
-        array(),false,'all'
-    );
-
-    wp_enqueue_script(
-        'woocommerce_factoring004_admin',
-        plugin_dir_url('factoring004-gateway/assets/js/factoring004-admin-orders.js').'factoring004-admin-orders.js',
-        array(), false, true
-    );
-
-    wp_nonce_field(-1,'factoring004_nonce');
-
-    require_once 'templates/modal.html';
-
-    $scriptData = array(
-        'deliveries' => (new WC_Factoring004_Gateway)->get_option('delivery_items')
-    );
-
-    wp_localize_script('woocommerce_factoring004_admin', 'factoring004_options', $scriptData);
-}
 
 function factoring004_init_gateway_class() {
 
@@ -233,7 +70,6 @@ function factoring004_init_gateway_class() {
 
             $this->supports = array(
                 'products',
-                'refunds'
             );
 
             // Метод со всеми полями параметров
@@ -253,16 +89,8 @@ function factoring004_init_gateway_class() {
             // Хук регистрации js страницы пользователя
             add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
 
-            // Хук регистрации js страницы пользователя в админке
-            add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
-
             // Регистрация вебхука
             add_action('woocommerce_api_factoring004-post-link', array($this, 'webhook'));
-
-            // Регистрация вывода чекбокс оферты
-            if ($this->get_option('agreement_file')) {
-                add_action('woocommerce_review_order_before_submit', array($this,'bt_add_checkout_checkbox'));
-            }
 
             // Регистрация js на странице checkout
             if ($this->get_option('client_route') === 'modal') {
@@ -296,39 +124,6 @@ function factoring004_init_gateway_class() {
                     </script>
                 ";
             }
-        }
-
-        public function bt_add_checkout_checkbox()
-        {
-            $agreementLink = wp_upload_dir()['baseurl'] . '/' . $this->get_option('agreement_file');
-            woocommerce_form_field('checkout_factoring004_agreement', array(
-                'id'          => 'factoring004_checkbox_agreement',
-                'type'        => 'checkbox',
-                'class'       => array('factoring004-checkbox-agreement'),
-                'required'    => true,
-                'label'       => "Я ознакомлен и согласен с условиями <a href='$agreementLink' target='_blank' rel='noopener'>Рассрочка 0-0-4</a>",
-            ));
-        }
-
-        public function process_admin_options()
-        {
-            $data = $this->get_post_data();
-            $this->set_post_data(array_merge($data,
-                [
-                    'woocommerce_factoring004_agreement_file'
-                    => isset($_FILES['woocommerce_factoring004_agreement_file'])
-                        ?
-                        $this->uploadAgreementFile($_FILES['woocommerce_factoring004_agreement_file'])
-                        :
-                        $data['woocommerce_factoring004_agreement_file'],
-                    'woocommerce_factoring004_delivery_items'
-                    => isset($data['woocommerce_factoring004_delivery_items'])
-                        ?
-                        implode(',',$data['woocommerce_factoring004_delivery_items'])
-                        :
-                        ''
-                ]));
-            return parent::process_admin_options();
         }
 
         public function init_form_fields()
@@ -387,12 +182,6 @@ function factoring004_init_gateway_class() {
                     'title'       => 'Partner Website',
                     'type'        => 'text'
                 ),
-                'delivery_items' => array(
-                    'type'        => 'factoring004_delivery_items',
-                ),
-                'agreement_file' => array(
-                    'type'        => 'factoring004_agreement_file',
-                ),
                 'client_route' => array(
                     'type'        => 'factoring004_client_route',
                 ),
@@ -428,147 +217,6 @@ function factoring004_init_gateway_class() {
                 </tr>
             <?php
             return ob_get_clean();
-        }
-
-        /**
-         * Создаем кастомное поле для загрузки файла
-         */
-        public function generate_factoring004_agreement_file_html()
-        {
-            ob_start();
-            ?>
-            <tr valign="top">
-                <th scope="row" class="titledesc">
-                    <label for="woocommerce_factoring004_agreement_file">Файл оферты</label>
-                </th>
-                <td class="forminp">
-                    <fieldset>
-                        <?php if ($this->get_option('agreement_file')):  ?>
-                            <label for="woocommerce_factoring004_agreement_file">
-                                <a target="_blank" href="<?php echo wp_upload_dir()['baseurl'].'/'.$this->get_option('agreement_file');  ?>" class="button-primary">Просмотреть</a>
-                                <button id="factoring004-button-delete" data-filename="<?php echo $this->get_option('agreement_file');  ?>" class="button-primary" type="button">Удалить</button>
-                                <input type="hidden" name="woocommerce_factoring004_agreement_file" value="<?php echo $this->get_option('agreement_file');  ?>">
-                                <?php wp_nonce_field() ?>
-                            </label>
-                        <?php else: ?>
-                            <label for="woocommerce_factoring004_agreement_file">
-                                <button class="button-primary" onclick="document.getElementById('woocommerce_factoring004_agreement_file').click()" type="button" id="factoring004-agreement-file-button">Выбрать файл</button>
-                                <input style="display: none;" type="file" name="woocommerce_factoring004_agreement_file" id="woocommerce_factoring004_agreement_file">
-                            </label>
-                            <p>Загрузите файл оферты, если вам необходимо его отобразить клиенту</p>
-                        <?php endif; ?>
-                        <br>
-                    </fieldset>
-                </td>
-            </tr>
-            <?php
-            return ob_get_clean();
-        }
-
-        /**
-         * Создаем кастомное поле для выбора способа доставки
-         */
-        public function generate_factoring004_delivery_items_html()
-        {
-            ob_start();
-            ?>
-            <tr valign="top">
-                <th scope="row" class="titledesc">
-                    <label for="woocommerce_factoring004_delivery_items">Способы доставки</label>
-                </th>
-                <td class="forminp">
-                    <fieldset>
-                        <label for="woocommerce_factoring004_delivery_items">
-                            <?php foreach ($this->getDeliveryItems() as $delivery): ?>
-                                <label style="display: block">
-                                    <input
-                                        <?php foreach (explode(',', $this->get_option('delivery_items')) as $item): ?>
-                                            <?php if ($item === $delivery['id']): ?>
-                                                checked
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                            type="checkbox" name="woocommerce_factoring004_delivery_items[]" value="<?php echo $delivery['id'] ?>">
-                                    <?php echo $delivery['name'] ?>
-                                </label>
-                            <?php endforeach; ?>
-                        </label>
-                        <br>
-                    </fieldset>
-                </td>
-            </tr>
-            <?php
-            return ob_get_clean();
-        }
-
-        /**
-         * Метод позволяет создать собствунную форму, если оно того требует (например: форму карты)
-         */
-        public function payment_fields()
-        {
-            global $woocommerce;
-
-            if ($this->description) {
-                echo wpautop(wp_kses_post($this->description));
-            }
-
-            echo '<link rel="stylesheet" href='.plugins_url('factoring004-gateway/assets/css/factoring004-paymentschedule.css').'><div id="factoring004-paymentschedule"></div><script type="text/javascript" src='.plugins_url('factoring004-gateway/assets/js/factoring004-paymentschedule.js').'></script>
-                   <script>
-                       jQuery(function ($) {
-                           let sum = "'. (int)strip_tags($woocommerce->cart->get_cart_total()). '";
-                           const t = new Factoring004.PaymentSchedule({ elemId:"factoring004-paymentschedule", totalAmount: sum });
-                           t.render();
-                       })
-                   </script>
-                   ';
-        }
-
-        /**
-         * Пользовательские CSS и JS, в случае если испаользуете в пользовательской части
-         */
-        public function payment_scripts()
-        {
-            wp_enqueue_script(
-                'woocommerce_factoring004_admin',
-                plugins_url('factoring004-gateway/assets/js/factoring004.js'),
-                array(), false, true
-            );
-            wp_enqueue_style(
-                'woocommerce_factoring004',
-                plugins_url('factoring004-gateway/assets/css/factoring004.css'),
-                array()
-            );
-        }
-
-        /**
-         * Пользовательские CSS и JS, в случае если испаользуете в админ части
-         */
-        public function admin_scripts()
-        {
-            $screen    = get_current_screen();
-            $screen_id = $screen ? $screen->id : '';
-
-            if ('woocommerce_page_wc-settings' !== $screen_id) {
-                return;
-            }
-
-            wp_enqueue_script(
-                'woocommerce_factoring004_admin',
-                plugin_dir_url('factoring004-gateway/assets/js/factoring004-admin.js').'factoring004-admin.js',
-                array(), false, true
-            );
-
-        }
-
-        /**
-         * Валидация полей чекаута
-         */
-        public function validate_fields()
-        {
-            if (isset($_POST['checkout_factoring004_agreement']) && empty($_POST['checkout_factoring004_agreement'])) {
-                wc_add_notice('Вам необходимо согласиться с условиями!', 'error');
-                return false;
-            }
-            return true;
         }
 
         /**
@@ -613,163 +261,6 @@ function factoring004_init_gateway_class() {
                 );
                 return;
             }
-        }
-
-        public function send_otp_delivery($data)
-        {
-            $order = wc_get_order($data['order_id']);
-
-            if (!$order) {
-                wp_send_json(false);
-            }
-
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
-
-            if (!$factoring004->sendOtpDelivery($this->get_option('partner_code'), $order)) {
-                wp_send_json(false);
-            }
-
-            wp_send_json(true);
-
-        }
-
-        /**
-         * @param $data
-         * отправка смс для возврата
-         */
-        public function send_otp_return($data)
-        {
-            $order = wc_get_order($data['order_id']);
-
-            if (!$order) {
-                wp_send_json(false);
-            }
-
-            $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
-
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
-
-            if (!$factoring004->sendOtpReturn($amount, $this->get_option('partner_code'), $order)) {
-                wp_send_json(false);
-            }
-
-            wp_send_json(true);
-
-        }
-
-        /**
-         * @param $data
-         * проверка смс кода для возврата
-         */
-
-        public function check_otp_return($data)
-        {
-            $order = wc_get_order($data['order_id']);
-
-            if (!$order) {
-                wp_send_json(false);
-            }
-
-            $amount = empty($data['amount']) ? 0 : (int) $data['amount'];
-
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
-
-            if (!$factoring004->checkOtpReturn($amount, $this->get_option('partner_code'), $order, $data['otp_code'])) {
-                wp_send_json(false);
-            }
-
-            if ($amount) {
-                wc_create_refund(['amount' => $amount, 'order_id' => $data['order_id']]);
-            }
-
-            wp_send_json(true);
-        }
-
-        /**
-         * обработка отмены
-         */
-        public function process_cancel($data)
-        {
-            $order = wc_get_order($data['order_id']);
-
-            if (!$order) {
-                wp_send_json(false);
-            }
-
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
-
-            if (!$factoring004->cancel($order, $this->get_option('partner_code'))) {
-                wp_send_json(false);
-            }
-
-            $order->update_status('cancelled');
-
-            wp_send_json(true);
-        }
-
-        /**
-         * обработка доставки
-         */
-        public function process_delivery($data)
-        {
-            $order = wc_get_order($data['order_id']);
-
-            if (!$order) {
-                wp_send_json(false);
-            }
-
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
-
-            if (!$factoring004->delivery( $data['order_id'], $this->get_option('partner_code'), $data['otp_code'], $order->get_total())) {
-                wp_send_json(false);
-            }
-
-            $order->update_status('completed');
-
-            wp_send_json(true);
-        }
-
-        /**
-         * Обработка возврата
-         */
-
-        public function process_refund($order_id, $amount = null, $reason = '')
-        {
-            $order = wc_get_order($order_id);
-
-            $factoring004 = new WC_Factoring004(
-                $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
-                $this->get_option('debug_mode') === 'yes'
-            );
-
-            if (!$factoring004->return($order, ceil($amount), $this->get_option('partner_code'))) {
-                return false;
-            }
-
-            $order->update_status('refunded');
-
-            return true;
         }
 
         /**
@@ -820,57 +311,6 @@ function factoring004_init_gateway_class() {
             } else {
                 wp_send_json(['success' => false, 'error' => 'Unexpected status'], 400);
             }
-        }
-
-        /**
-         * получение всех видов доставки по зоне КЗ
-         */
-        private function getDeliveryItems()
-        {
-            $zones = WC_Shipping_Zones::get_zones();
-            $methods = [];
-            foreach ($zones as $zone) {
-                if ($zone['zone_name'] === static::ZONE_NAME) {
-                    foreach ($zone['shipping_methods'] as $method) {
-                        if ($method->enabled === 'yes') {
-                            $methods[] = [
-                                'id'=>$method->id,
-                                'name'=>$method->method_title
-                            ];
-                        }
-                    }
-                }
-            }
-            return $methods;
-        }
-
-        /**
-         * загрузка файла
-         */
-        private function uploadAgreementFile($agreement_file)
-        {
-            $filename = '';
-            if ($agreement_file['tmp_name']) {
-                $ext = pathinfo($agreement_file['name'], PATHINFO_EXTENSION);
-                $filename = 'factoring004-agreement-' . uniqid(rand(), true) . '.' . $ext;
-                move_uploaded_file($agreement_file['tmp_name'], wp_upload_dir()['basedir'].'/' . $filename);
-            }
-            return $filename;
-        }
-
-        /**
-         * удаление файла
-         */
-        public function destroyAgreementFile($agreement_file)
-        {
-            if (file_exists(wp_upload_dir()['basedir'].'/' . $agreement_file)) {
-                if (!unlink(wp_upload_dir()['basedir'].'/' . $agreement_file)) {
-                    wp_send_json(['success'=>false,'message'=>'Неуспех!']);
-                }
-            }
-
-            $this->update_option('agreement_file');
-            wp_send_json(['success'=>true,'message'=>'Успех!']);
         }
     }
 }
