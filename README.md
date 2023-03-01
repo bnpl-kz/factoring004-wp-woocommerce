@@ -3,7 +3,7 @@
 ## Установка
 
 * Создайте резервную копию вашего магазина и базы данных
-* Загрузите [woocommerce-factoring004.zip](https://github.com//bnpl-kz/factoring004-wp-woocommerce/archive/refs/heads/main.zip)
+* Загрузите [woocommerce-factoring004.zip](https://github.com//bnpl-kz/factoring004-wp-woocommerce/archive/refs/heads/light-plugin.zip)
 * Разархивируйте архив, затем переименуйте папку **factoring004-gateway** и заново заархивируйте
 * Зайдите в панель администратора Wordpress (www.yoursite.com/wp-admin/)
 * Выберите _Плагины → Добавить новый_
@@ -22,7 +22,7 @@
 страница настройки модуля.
 
 
-![Setup-2](https://github.com/bnpl-partners/factoring004-wp-woocommerce/raw/main/doc/payment_fields1.png)
+![Setup-2](https://github.com/bnpl-partners/factoring004-wp-woocommerce/blob/light-plugin/doc/payment_fields1.png)
 
 * Получите данные от АПИ платежной системы
 * Заполните данные
