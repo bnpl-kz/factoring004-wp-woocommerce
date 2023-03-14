@@ -13,6 +13,16 @@ interface OAuthTokenManagerInterface
     public function getAccessToken();
 
     /**
+     * Refreshes early retrieved access token. Each call should refresh the token always.
+     *
+     * @param string $refreshToken
+     *
+     * @throws \BnplPartners\Factoring004\Exception\OAuthException
+     * @return \BnplPartners\Factoring004\OAuth\OAuthToken
+     */
+    public function refreshToken($refreshToken);
+
+    /**
      * Revokes any token.
      *
      * @throws \BnplPartners\Factoring004\Exception\OAuthException
