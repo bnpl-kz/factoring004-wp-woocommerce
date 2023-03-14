@@ -21,8 +21,10 @@ use BnplPartners\Factoring004\PreApp\PreAppMessage;
 use BnplPartners\Factoring004\Transport\GuzzleTransport;
 use BnplPartners\Factoring004\Transport\TransportInterface;
 use Psr\Log\NullLogger;
+use BnplPartners\Factoring004\OAuth\OAuthTokenManager;
 
 require_once 'factoring004-logger.php';
+require_once 'factoring004-cache.php';
 
 final class WC_Factoring004
 {
@@ -35,10 +37,20 @@ final class WC_Factoring004
 
     private $debug_mode;
 
-    public function __construct($host, $token, $debug)
+    private const AUTH_PATH = '/users/api/v1';
+
+    private const CACHE_KEY = 'factoring004-cache';
+
+    public function __construct($host, $login, $password, $debug)
     {
+        if (is_null(CustomCache::get(self::CACHE_KEY)['token'])) {
+            CustomCache::set(self::CACHE_KEY, [
+                'token'=>(new OAuthTokenManager($host.self::AUTH_PATH, $login, $password))
+                    ->getAccessToken()->getAccess()
+            ]);
+        }
         $this->debug_mode = $debug;
-        $this->api = Api::create($host, new BearerTokenAuth($token), $this->createTransport());
+        $this->api = Api::create($host, new BearerTokenAuth(CustomCache::get(self::CACHE_KEY)['token']), $this->createTransport());
         $this->base_url = get_site_url();
     }
 
