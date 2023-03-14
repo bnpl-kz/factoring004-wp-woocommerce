@@ -359,12 +359,12 @@ function factoring004_init_gateway_class() {
                     'title'       => 'API Host',
                     'type'        => 'text'
                 ),
-                'preapp_token' => array(
-                    'title'       => 'OAuth Token bnpl-partners',
+                'login' => array(
+                    'title'       => 'Login',
                     'type'        => 'text',
                 ),
-                'delivery_token' => array(
-                    'title'       => 'OAuth Token AccountingService',
+                'password' => array(
+                    'title'       => 'Password',
                     'type'        => 'text'
                 ),
                 'partner_name' => array(
@@ -581,7 +581,8 @@ function factoring004_init_gateway_class() {
             try {
                 $factoring004 = new WC_Factoring004(
                     $this->get_option('api_host'),
-                    $this->get_option('preapp_token'),
+                    $this->get_option('login'),
+                    $this->get_option('password'),
                     $this->get_option('debug_mode') === 'yes'
                 );
 
@@ -625,7 +626,8 @@ function factoring004_init_gateway_class() {
 
             $factoring004 = new WC_Factoring004(
                 $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
+                $this->get_option('login'),
+                $this->get_option('password'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -653,7 +655,8 @@ function factoring004_init_gateway_class() {
 
             $factoring004 = new WC_Factoring004(
                 $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
+                $this->get_option('login'),
+                $this->get_option('password'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -682,7 +685,8 @@ function factoring004_init_gateway_class() {
 
             $factoring004 = new WC_Factoring004(
                 $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
+                $this->get_option('login'),
+                $this->get_option('password'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -710,7 +714,8 @@ function factoring004_init_gateway_class() {
 
             $factoring004 = new WC_Factoring004(
                 $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
+                $this->get_option('login'),
+                $this->get_option('password'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -736,7 +741,8 @@ function factoring004_init_gateway_class() {
 
             $factoring004 = new WC_Factoring004(
                 $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
+                $this->get_option('login'),
+                $this->get_option('password'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
@@ -759,7 +765,8 @@ function factoring004_init_gateway_class() {
 
             $factoring004 = new WC_Factoring004(
                 $this->get_option('api_host'),
-                $this->get_option('delivery_token'),
+                $this->get_option('login'),
+                $this->get_option('password'),
                 $this->get_option('debug_mode') === 'yes'
             );
 
