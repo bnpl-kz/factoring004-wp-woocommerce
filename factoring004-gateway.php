@@ -154,12 +154,12 @@ function factoring004_init_gateway_class() {
                     'title'       => 'API Host',
                     'type'        => 'text'
                 ),
-                'preapp_token' => array(
-                    'title'       => 'OAuth Token bnpl-partners',
+                'login' => array(
+                    'title'       => 'Login',
                     'type'        => 'text',
                 ),
-                'delivery_token' => array(
-                    'title'       => 'OAuth Token AccountingService',
+                'password' => array(
+                    'title'       => 'Password',
                     'type'        => 'text'
                 ),
                 'partner_name' => array(
@@ -172,14 +172,6 @@ function factoring004_init_gateway_class() {
                 ),
                 'point_code' => array(
                     'title'       => 'Point Code',
-                    'type'        => 'text'
-                ),
-                'partner_email' => array(
-                    'title'       => 'Partner Email',
-                    'type'        => 'text'
-                ),
-                'partner_website' => array(
-                    'title'       => 'Partner Website',
                     'type'        => 'text'
                 ),
                 'client_route' => array(
@@ -229,7 +221,8 @@ function factoring004_init_gateway_class() {
             try {
                 $factoring004 = new WC_Factoring004(
                     $this->get_option('api_host'),
-                    $this->get_option('preapp_token'),
+                    $this->get_option('login'),
+                    $this->get_option('password'),
                     $this->get_option('debug_mode') === 'yes'
                 );
 
