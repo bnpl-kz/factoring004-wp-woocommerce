@@ -23,7 +23,7 @@ class OtpResource extends AbstractResource
      */
     public function checkOtp(CheckOtp $otp)
     {
-        $response = $this->postRequest('/accounting/checkOtp', $otp->toArray());
+        $response = $this->postRequest('/accounting/v1/private/checkOtp', $otp->toArray());
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             return DtoOtp::createFromArray($response->getBody());
@@ -45,7 +45,7 @@ class OtpResource extends AbstractResource
      */
     public function sendOtp(SendOtp $otp)
     {
-        $response = $this->postRequest('/accounting/sendOtp', $otp->toArray());
+        $response = $this->postRequest('/accounting/v1/private/sendOtp', $otp->toArray());
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             return DtoOtp::createFromArray($response->getBody());
@@ -67,7 +67,7 @@ class OtpResource extends AbstractResource
      */
     public function checkOtpReturn(CheckOtpReturn $otp)
     {
-        $response = $this->postRequest('/accounting/checkOtpReturn', $otp->toArray());
+        $response = $this->postRequest('/accounting/v1/private/checkOtpReturn', $otp->toArray());
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             return DtoOtp::createFromArray($response->getBody());
@@ -89,7 +89,7 @@ class OtpResource extends AbstractResource
      */
     public function sendOtpReturn(SendOtpReturn $otp)
     {
-        $response = $this->postRequest('/accounting/sendOtpReturn', $otp->toArray());
+        $response = $this->postRequest('/accounting/v1/private/sendOtpReturn', $otp->toArray());
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             return DtoOtp::createFromArray($response->getBody());
@@ -111,6 +111,10 @@ class OtpResource extends AbstractResource
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 500) {
             $data = $response->getBody();
 
+            if ($response->getStatusCode() === 401) {
+                throw new AuthenticationException('', isset($data['message']) ? $data['message'] : '', $data['code']);
+            }
+
             if (isset($data['error']) && is_array($data['error'])) {
                 $data = $data['error'];
             }
@@ -121,12 +125,6 @@ class OtpResource extends AbstractResource
 
             if (empty($data['code'])) {
                 throw new UnexpectedResponseException($response, isset($data['message']) ? $data['message'] : 'Unexpected response schema');
-            }
-
-            $code = (int) $data['code'];
-
-            if (in_array($code, static::AUTH_ERROR_CODES, true)) {
-                throw new AuthenticationException(isset($data['description']) ? $data['description'] : '', isset($data['message']) ? $data['message'] : '', $code);
             }
 
             /** @psalm-suppress ArgumentTypeCoercion */

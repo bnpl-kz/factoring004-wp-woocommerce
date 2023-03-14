@@ -27,7 +27,7 @@ class ChangeStatusResource extends AbstractResource
     {
         $response = $this->request(
             'PUT',
-            '/accounting/changeStatus/json',
+            '/accounting/v1/private/changeStatus/json',
             array_map(function (MerchantsOrders $orders) {
                 return $orders->toArray();
             }, $merchantOrders)
@@ -53,6 +53,10 @@ class ChangeStatusResource extends AbstractResource
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 500) {
             $data = $response->getBody();
 
+            if ($response->getStatusCode() === 401) {
+                throw new AuthenticationException('', isset($data['message']) ? $data['message'] : '', $data['code']);
+            }
+
             if (isset($data['error']) && is_array($data['error'])) {
                 $data = $data['error'];
             }
@@ -63,12 +67,6 @@ class ChangeStatusResource extends AbstractResource
 
             if (empty($data['code'])) {
                 throw new UnexpectedResponseException($response, isset($data['message']) ? $data['message'] : 'Unexpected response schema');
-            }
-
-            $code = (int) $data['code'];
-
-            if (in_array($code, static::AUTH_ERROR_CODES, true)) {
-                throw new AuthenticationException(isset($data['description']) ? $data['description'] : '', isset($data['message']) ? $data['message'] : '', $code);
             }
 
             /** @psalm-suppress ArgumentTypeCoercion */

@@ -13,87 +13,91 @@ class OAuthToken implements JsonSerializable, ArrayInterface
     /**
      * @var string
      */
-    private $accessToken;
-    /**
-     * @var string
-     */
-    private $scope;
+    private $access;
+
     /**
      * @var int
      */
-    private $expiresIn;
+    private $accessExpiresAt;
+
     /**
      * @var string
      */
-    private $tokenType;
+    private $refresh;
 
     /**
-     * @param string $accessToken
-     * @param string $scope
-     * @param string $tokenType
-     * @param int $expiresIn
+     * @var int
      */
-    public function __construct($accessToken, $scope, $tokenType, $expiresIn)
+    private $refreshExpiresAt;
+
+    /**
+     * @param string $access
+     * @param int $accessExpiresAt
+     * @param string $refresh
+     * @param int $refreshExpiresAt
+     */
+    public function __construct($access, $accessExpiresAt, $refresh, $refreshExpiresAt)
     {
-        $this->accessToken = $accessToken;
-        $this->scope = $scope;
-        $this->expiresIn = $expiresIn;
-        $this->tokenType = $tokenType;
+        $this->access = $access;
+        $this->accessExpiresAt = $accessExpiresAt;
+        $this->refresh = $refresh;
+        $this->refreshExpiresAt = $refreshExpiresAt;
     }
 
     /**
      * @param array<string, mixed> $token
-     * @psalm-param array{access_token: string, scope: string, expires_in: int, token_type: string} $token
+     * @psalm-param array{access: string, accessExpiresAt: int, refresh: string, refreshExpiresAt: int} $token
+     *
      * @return \BnplPartners\Factoring004\OAuth\OAuthToken
      */
     public static function createFromArray(array $token)
     {
-        return new self($token['access_token'], $token['scope'], $token['token_type'], $token['expires_in']);
+        return new self($token['access'], $token['accessExpiresAt'], $token['refresh'], $token['refreshExpiresAt']);
     }
 
     /**
      * @return string
      */
-    public function getAccessToken()
+    public function getAccess()
     {
-        return $this->accessToken;
+        return $this->access;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAccessExpiresAt()
+    {
+        return $this->accessExpiresAt;
     }
 
     /**
      * @return string
      */
-    public function getScope()
+    public function getRefresh()
     {
-        return $this->scope;
+        return $this->refresh;
     }
 
     /**
-     * @return int In seconds.
+     * @return int
      */
-    public function getExpiresIn()
+    public function getRefreshExpiresAt()
     {
-        return $this->expiresIn;
+        return $this->refreshExpiresAt;
     }
 
     /**
-     * @return string
-     */
-    public function getTokenType()
-    {
-        return $this->tokenType;
-    }
-
-    /**
-     * @psalm-return array{access_token: string, scope: string, expires_in: int, token_type: string}
-     * @return mixed[]
+     * @psalm-return array{access: string, accessExpiresAt: int, refresh: string, refreshExpiresAt: int}
+     * @return array<string, mixed>
      */
     public function toArray()
     {
         return [
-            'access_token' => $this->getAccessToken(),
-            'scope' => $this->getScope(),
-            'expires_in' => $this->getExpiresIn(),
-            'token_type' => $this->getTokenType(),
+            'access' => $this->getAccess(),
+            'accessExpiresAt' => $this->getAccessExpiresAt(),
+            'refresh' => $this->getRefresh(),
+            'refreshExpiresAt' => $this->getRefreshExpiresAt(),
         ];
     }
 

@@ -4,13 +4,11 @@ namespace BnplPartners\Factoring004;
 
 use BnplPartners\Factoring004\Auth\AuthenticationInterface;
 use BnplPartners\Factoring004\Auth\NoAuth;
-use BnplPartners\Factoring004\Transport\ResponseInterface;
 use BnplPartners\Factoring004\Transport\TransportInterface;
 use InvalidArgumentException;
 
 abstract class AbstractResource
 {
-    const AUTH_ERROR_CODES = [900901, 900902, 900910];
     const DEFAULT_HEADERS = [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',

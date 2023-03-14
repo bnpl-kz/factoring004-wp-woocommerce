@@ -23,7 +23,7 @@ class JsonWithAmountChangeStatusResourceTest extends AbstractResourceTest
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects($this->once())
             ->method('request')
-            ->with('PUT', '/accounting/changeStatus/json', [$orders->toArray()], [])
+            ->with('PUT', '/accounting/v1/private/changeStatus/json', [$orders->toArray()], [])
             ->willReturn(new Response(200, [], [
                 'SuccessfulResponses' => [['error' => '', 'msg' => 'message']],
                 'ErrorResponses' => [],
@@ -53,7 +53,7 @@ class JsonWithAmountChangeStatusResourceTest extends AbstractResourceTest
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects($this->once())
             ->method('request')
-            ->with('PUT', '/accounting/changeStatus/json', [$orders->toArray()], [])
+            ->with('PUT', '/accounting/v1/private/changeStatus/json', [$orders->toArray()], [])
             ->willReturn(new Response(200, [], [
                 'SuccessfulResponses' => [],
                 'ErrorResponses' => [['code' => 'code', 'error' => 'error', 'message' => 'message']],
@@ -83,7 +83,7 @@ class JsonWithAmountChangeStatusResourceTest extends AbstractResourceTest
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects($this->once())
             ->method('request')
-            ->with('PUT', '/accounting/changeStatus/json', [$orders->toArray()], [])
+            ->with('PUT', '/accounting/v1/private/changeStatus/json', [$orders->toArray()], [])
             ->willReturn(new Response(200, [], [
                 'SuccessfulResponses' => [['error' => '', 'msg' => 'message']],
                 'ErrorResponses' => [['code' => 'code', 'error' => 'error', 'message' => 'message']],
