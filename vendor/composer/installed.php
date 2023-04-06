@@ -22,7 +22,7 @@
         'bnpl-partners/factoring004' => array(
             'pretty_version' => '2.0.0',
             'version' => '2.0.0.0',
-            'reference' => '7e3ac81739a3f15f46587157ffb3eefe5d3c174f',
+            'reference' => 'c8735aefa55a0be9361d42cc37dae31a4c302868',
             'type' => 'library',
             'install_path' => __DIR__ . '/../bnpl-partners/factoring004',
             'aliases' => array(),
