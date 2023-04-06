@@ -15,6 +15,18 @@ use BnplPartners\Factoring004\Transport\ResponseInterface;
 
 class PreAppResource extends AbstractResource
 {
+    private $preappPath = '/bnpl/v3/preapp';
+
+    /**
+     * @param string $preappPath
+     * @return PreAppResource
+     */
+    public function setPreappPath($preappPath)
+    {
+        $this->preappPath = $preappPath;
+        return $this;
+    }
+
     /**
      * @throws \BnplPartners\Factoring004\Exception\AuthenticationException
      * @throws \BnplPartners\Factoring004\Exception\EndpointUnavailableException
@@ -28,7 +40,7 @@ class PreAppResource extends AbstractResource
      */
     public function preApp(PreAppMessage $data)
     {
-        $response = $this->postRequest('/bnpl/v3/preapp', $data->toArray());
+        $response = $this->postRequest($this->preappPath, $data->toArray());
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             return PreAppResponse::createFromArray($response->getBody()['data']);

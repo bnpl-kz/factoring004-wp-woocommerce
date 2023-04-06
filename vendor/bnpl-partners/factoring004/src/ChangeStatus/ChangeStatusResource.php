@@ -11,6 +11,18 @@ use BnplPartners\Factoring004\Transport\ResponseInterface;
 
 class ChangeStatusResource extends AbstractResource
 {
+    private $changeStatusPath = '/accounting/v1/changeStatus/json';
+
+    /**
+     * @param string $changeStatusPath
+     * @return ChangeStatusResource
+     */
+    public function setChangeStatusPath($changeStatusPath)
+    {
+        $this->changeStatusPath = $changeStatusPath;
+        return $this;
+    }
+
     /**
      * @param \BnplPartners\Factoring004\ChangeStatus\MerchantsOrders[] $merchantOrders
      *
@@ -27,7 +39,7 @@ class ChangeStatusResource extends AbstractResource
     {
         $response = $this->request(
             'PUT',
-            '/accounting/v1/private/changeStatus/json',
+            $this->changeStatusPath,
             array_map(function (MerchantsOrders $orders) {
                 return $orders->toArray();
             }, $merchantOrders)
