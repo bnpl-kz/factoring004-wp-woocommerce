@@ -138,7 +138,7 @@ final class WC_Factoring004
                     $partner_code,
                     [
                         new ReturnOrder(
-                                $order->get_id(),
+                                (string) $order->get_id(),
                                 $amount > 0 ? ReturnStatus::PARTRETURN() : ReturnStatus::RETURN(),
                                 $this->getAmountRemaining($amount, $order->get_total() - $order->get_total_refunded())
                             ),
