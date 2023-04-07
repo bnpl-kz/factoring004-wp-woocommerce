@@ -746,7 +746,7 @@ function factoring004_init_gateway_class() {
                 $this->get_option('debug_mode') === 'yes'
             );
 
-            if (!$factoring004->delivery( $data['order_id'], $this->get_option('partner_code'), $data['otp_code'], $order->get_total())) {
+            if (!$factoring004->delivery( $data['order_id'], $this->get_option('partner_code'), $data['otp_code'], (int) preg_replace('/\..+$/u','', $order->get_total()))) {
                 wp_send_json(false);
             }
 
