@@ -774,7 +774,9 @@ function factoring004_init_gateway_class() {
                 return false;
             }
 
-            $order->update_status('refunded');
+            if (is_null($amount) && (int)$order->get_total() - (int)$order->get_total_refunded() === 0) {
+                $order->update_status('refunded');
+            }
 
             return true;
         }

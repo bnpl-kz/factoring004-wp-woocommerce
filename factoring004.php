@@ -140,7 +140,12 @@ final class WC_Factoring004
                         new ReturnOrder(
                                 (string) $order->get_id(),
                                 $amount > 0 ? ReturnStatus::PARTRETURN() : ReturnStatus::RETURN(),
-                                $this->getAmountRemaining($amount, $order->get_total() - $order->get_total_refunded())
+                                (int)$this->getAmountRemaining(
+                                    $amount,
+                                    $amount === $order->get_total_refunded() ?
+                                        $order->get_total() :
+                                        $order->get_total() - ($order->get_total_refunded()-$amount)
+                                )
                             ),
                     ],
                 ),
@@ -222,7 +227,12 @@ final class WC_Factoring004
         try {
 
             $sendOtpReturn = new SendOtpReturn(
-                $this->getAmountRemaining($amount, ceil($order->get_total() - $order->get_total_refunded())),
+                (int)$this->getAmountRemaining(
+                    $amount,
+                    $amount === $order->get_total_refunded() ?
+                        $order->get_total() :
+                        $order->get_total() - ($order->get_total_refunded()-$amount)
+                ),
                 (string) $partner_code,
                 (string) $order->get_id()
             );
@@ -251,7 +261,12 @@ final class WC_Factoring004
     {
         try {
             $checkOtpReturn = new CheckOtpReturn(
-                $this->getAmountRemaining($amount, ceil($order->get_total() - $order->get_total_refunded())),
+                (int)$this->getAmountRemaining(
+                    $amount,
+                    $amount === $order->get_total_refunded() ?
+                        $order->get_total() :
+                        $order->get_total() - ($order->get_total_refunded()-$amount)
+                ),
                 (string) $partner_code,
                 (string) $order->get_id(),
                 $otp_code
@@ -305,7 +320,7 @@ final class WC_Factoring004
     private function getAmountRemaining($amount, $total)
     {
         return ($amount > 0 && $total > $amount)
-            ? (int) $total - $amount
+            ? $total - $amount
             : 0;
     }
 
