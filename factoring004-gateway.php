@@ -86,9 +86,6 @@ function factoring004_init_gateway_class() {
             // Хук действия сохраняет настройки
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
-            // Хук регистрации js страницы пользователя
-            add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
-
             // Регистрация вебхука
             add_action('woocommerce_api_factoring004-post-link', array($this, 'webhook'));
 
