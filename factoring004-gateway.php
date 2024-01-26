@@ -97,7 +97,7 @@ function factoring004_init_gateway_class() {
 
         public function factoring004_add_jscript_checkout()
         {
-            if ($this->get_option('client_route') === 'modal') {
+            if ($this->get_option('client_route') === 'modal' && $this->enabled === 'yes') {
                 $domain = stripos($this->get_option('api_host'), 'dev') ? 'dev.bnpl.kz' : 'bnpl.kz';
                 echo "<script defer src='https://$domain/widget/index_bundle.js'></script><div id='modal-factoring004'></div>
                     <script>
