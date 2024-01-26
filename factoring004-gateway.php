@@ -99,27 +99,29 @@ function factoring004_init_gateway_class() {
         {
             if ($this->get_option('client_route') === 'modal' && $this->enabled === 'yes') {
                 $domain = stripos($this->get_option('api_host'), 'dev') ? 'dev.bnpl.kz' : 'bnpl.kz';
-                echo "<script defer src='https://$domain/widget/index_bundle.js'></script><div id='modal-factoring004'></div>
-                    <script>
-                        jQuery(function($) {
-                            $(document).on('click','#place_order', function () {
-                                $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
-                                    const bnplKzApi = new BnplKzApi.CPO({
-                                      rootId: 'modal-factoring004',
-                                      callbacks: {
+                ?>
+                <script defer src="https://<?php echo $domain?>/widget/index_bundle.js"></script><div id="modal-factoring004"></div>
+                <script>
+                    jQuery(function($) {
+                        $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
+                            if (XMLHttpRequest.responseJSON.result == "success" && XMLHttpRequest.responseJSON.redirectLink != null) {
+
+                                const bnplKzApi = new BnplKzApi.CPO({
+                                    rootId: "modal-factoring004",
+                                    callbacks: {
                                         onError: () => window.location.replace(XMLHttpRequest.responseJSON.redirectLink),
-                                        onDeclined: () => window.location.replace('/'),
-                                        onEnd: () => window.location.replace('/'),
-                                      }
-                                    });
-                                    bnplKzApi.render({
-                                        redirectLink: XMLHttpRequest.responseJSON.redirectLink
-                                    });
-                                })
-                            })
+                                        onDeclined: () => window.location.replace("/"),
+                                        onEnd: () => window.location.replace("/"),
+                                    }
+                                });
+                                bnplKzApi.render({
+                                    redirectLink: XMLHttpRequest.responseJSON.redirectLink
+                                });
+                            }
                         })
-                    </script>
-                ";
+                    })
+                </script>
+                <?php
             }
         }
 
