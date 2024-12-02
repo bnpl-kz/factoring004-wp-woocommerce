@@ -306,3 +306,51 @@ function factoring004_init_gateway_class() {
         }
     }
 }
+
+// добавление графика платежей
+add_action('woocommerce_after_checkout_form', 'add_payment_schedule');
+function add_payment_schedule() {
+    ?>
+    <script src="<?php echo get_template_directory_uri(); ?>/assets/js/index.js"></script>
+    <div id="factoring004-schedule" style="display: none; padding: 24px"></div>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            let totalAmount = <?php echo WC()->cart->get_total('edit'); ?>; // сумма заказа
+
+            const schedule = new Factoring004.PaymentSchedule({
+                elemId: "factoring004-schedule",
+                totalAmount,
+            }); // инициализация графика
+
+            schedule.render(); // отрисовка графика
+
+            const factoringSchedule = document.getElementById('factoring004-schedule');
+            const paymentMethodsContainer = document.querySelector('.wc_payment_methods');
+
+            if (!factoringSchedule || !paymentMethodsContainer) {
+                console.error('Missing required elements for payment method detection.');
+                return;
+            }
+
+            // Проверка выбранного метода оплаты
+            function checkSelectedPaymentMethod() {
+                const selectedMethod = document.querySelector('.wc_payment_methods input[name="payment_method"]:checked');
+
+                if (selectedMethod && selectedMethod.value === 'factoring004') {
+                    factoringSchedule.style.display = 'block';
+                } else {
+                    factoringSchedule.style.display = 'none';
+                }
+            }
+
+            // Используем jQuery для отслеживания события change
+            jQuery('body').on('change', 'input[name="payment_method"]', function () {
+                checkSelectedPaymentMethod();
+            });
+
+            // Проверяем выбранный метод оплаты при загрузке страницы
+            checkSelectedPaymentMethod();
+        });
+    </script>
+    <?php
+}
