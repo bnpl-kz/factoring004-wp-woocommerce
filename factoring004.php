@@ -73,7 +73,7 @@ final class WC_Factoring004
                     'itemSum' => (int) ceil($item->get_total()),
                 ];
             }, $order->get_items())),
-            'successRedirect' => $this->base_url,
+            'successRedirect' => $order->get_checkout_order_received_url(),
             'failRedirect' => $this->base_url,
             'postLink' => $this->base_url . '/wc-api/' . $this->webhook_url,
             'phoneNumber' => preg_replace('/^8|\+7/', '7', $order->get_billing_phone()),

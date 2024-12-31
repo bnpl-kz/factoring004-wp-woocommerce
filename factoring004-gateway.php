@@ -46,6 +46,27 @@ function disable_factoring004_above_6000_or_below_200000($available_gateways)
     return $available_gateways;
 }
 
+// доработка для нового блочного режима
+add_action('plugins_loaded', function () {
+    if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+        require_once __DIR__ . '/Factoring004PaymentMethod.php';
+    }
+});
+
+add_action('woocommerce_blocks_loaded', 'factoring004_woocommerce_blocks_support');
+
+function factoring004_woocommerce_blocks_support() {
+    if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+        add_action(
+            'woocommerce_blocks_payment_method_type_registration',
+            function ($payment_method_registry) {
+                // Регистрируем метод оплаты
+                $payment_method_registry->register(new Factoring004PaymentMethod());
+            }
+        );
+    }
+}
+
 add_action('plugins_loaded', 'factoring004_init_gateway_class');
 
 function factoring004_init_gateway_class() {
@@ -86,6 +107,9 @@ function factoring004_init_gateway_class() {
             // Хук действия сохраняет настройки
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
+            // Хук регистрации js страницы пользователя
+            add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
+
             // Регистрация вебхука
             add_action('woocommerce_api_factoring004-post-link', array($this, 'webhook'));
 
@@ -97,31 +121,29 @@ function factoring004_init_gateway_class() {
 
         public function factoring004_add_jscript_checkout()
         {
-            if ($this->get_option('client_route') === 'modal' && $this->enabled === 'yes') {
+            if ($this->get_option('client_route') === 'modal') {
                 $domain = stripos($this->get_option('api_host'), 'dev') ? 'dev.bnpl.kz' : 'bnpl.kz';
-                ?>
-                <script defer src="https://<?php echo $domain?>/widget/index_bundle.js"></script><div id="modal-factoring004"></div>
-                <script>
-                    jQuery(function($) {
-                        $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
-                            if (XMLHttpRequest.responseJSON.result == "success" && XMLHttpRequest.responseJSON.redirectLink != null) {
-
-                                const bnplKzApi = new BnplKzApi.CPO({
-                                    rootId: "modal-factoring004",
-                                    callbacks: {
+                echo "<script defer src='https://$domain/widget/index_bundle.js'></script><div id='modal-factoring004'></div>
+                    <script>
+                        jQuery(function($) {
+                            $(document).on('click','#place_order', function () {
+                                $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
+                                    const bnplKzApi = new BnplKzApi.CPO({
+                                      rootId: 'modal-factoring004',
+                                      callbacks: {
                                         onError: () => window.location.replace(XMLHttpRequest.responseJSON.redirectLink),
-                                        onDeclined: () => window.location.replace("/"),
-                                        onEnd: () => window.location.replace("/"),
-                                    }
-                                });
-                                bnplKzApi.render({
-                                    redirectLink: XMLHttpRequest.responseJSON.redirectLink
-                                });
-                            }
+                                        onDeclined: () => window.location.replace('/'),
+                                        onEnd: () => window.location.replace('/'),
+                                      }
+                                    });
+                                    bnplKzApi.render({
+                                        redirectLink: XMLHttpRequest.responseJSON.redirectLink
+                                    });
+                                })
+                            })
                         })
-                    })
-                </script>
-                <?php
+                    </script>
+                ";
             }
         }
 
@@ -343,14 +365,42 @@ function add_payment_schedule() {
                 }
             }
 
-            // Используем jQuery для отслеживания события change
+            // отслеживание события change
             jQuery('body').on('change', 'input[name="payment_method"]', function () {
                 checkSelectedPaymentMethod();
             });
 
-            // Проверяем выбранный метод оплаты при загрузке страницы
             checkSelectedPaymentMethod();
         });
     </script>
     <?php
+}
+
+add_action('wp_enqueue_scripts', function () {
+    wp_register_script(
+        'factoring004-payment-script',
+        plugin_dir_url(__FILE__) . 'assets/js/factoring004-payment.js',
+        ['wc-blocks-registry'],
+        '1.0.0',
+        true
+    );
+
+    if (is_checkout()) {
+        wp_enqueue_script('factoring004-payment-script');
+    }
+});
+
+add_action('wp_enqueue_scripts', 'factoring004_payment_schedule_script');
+
+function factoring004_payment_schedule_script() {
+    // Проверка страницы блочного чекаута
+    if (function_exists('is_checkout') && is_checkout()) {
+        wp_enqueue_script(
+            'factoring004-payment-schedule',
+            get_template_directory_uri() . '/assets/js/index.js',
+            array('wp-element', 'react', 'react-dom'),
+            '1.0.0',
+            true
+        );
+    }
 }

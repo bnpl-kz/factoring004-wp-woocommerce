@@ -34,9 +34,9 @@
 
 Разработанно и протестированно с:
 
-* Wordress 5.9.3
-* WooCommerce 6.3.1
-* PHP 5.x/7.x
+* Wordress 6.7.1
+* WooCommerce 9.5.1
+* PHP 8.1
 
 ## Тестирование
 
