@@ -86,9 +86,6 @@ function factoring004_init_gateway_class() {
             // Хук действия сохраняет настройки
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
-            // Хук регистрации js страницы пользователя
-            add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
-
             // Регистрация вебхука
             add_action('woocommerce_api_factoring004-post-link', array($this, 'webhook'));
 
@@ -100,29 +97,31 @@ function factoring004_init_gateway_class() {
 
         public function factoring004_add_jscript_checkout()
         {
-            if ($this->get_option('client_route') === 'modal') {
+            if ($this->get_option('client_route') === 'modal' && $this->enabled === 'yes') {
                 $domain = stripos($this->get_option('api_host'), 'dev') ? 'dev.bnpl.kz' : 'bnpl.kz';
-                echo "<script defer src='https://$domain/widget/index_bundle.js'></script><div id='modal-factoring004'></div>
-                    <script>
-                        jQuery(function($) {
-                            $(document).on('click','#place_order', function () {
-                                $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
-                                    const bnplKzApi = new BnplKzApi.CPO({
-                                      rootId: 'modal-factoring004',
-                                      callbacks: {
+                ?>
+                <script defer src="https://<?php echo $domain?>/widget/index_bundle.js"></script><div id="modal-factoring004"></div>
+                <script>
+                    jQuery(function($) {
+                        $(document).ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
+                            if (XMLHttpRequest.responseJSON.result == "success" && XMLHttpRequest.responseJSON.redirectLink != null) {
+
+                                const bnplKzApi = new BnplKzApi.CPO({
+                                    rootId: "modal-factoring004",
+                                    callbacks: {
                                         onError: () => window.location.replace(XMLHttpRequest.responseJSON.redirectLink),
-                                        onDeclined: () => window.location.replace('/'),
-                                        onEnd: () => window.location.replace('/'),
-                                      }
-                                    });
-                                    bnplKzApi.render({
-                                        redirectLink: XMLHttpRequest.responseJSON.redirectLink
-                                    });
-                                })
-                            })
+                                        onDeclined: () => window.location.replace("/"),
+                                        onEnd: () => window.location.replace("/"),
+                                    }
+                                });
+                                bnplKzApi.render({
+                                    redirectLink: XMLHttpRequest.responseJSON.redirectLink
+                                });
+                            }
                         })
-                    </script>
-                ";
+                    })
+                </script>
+                <?php
             }
         }
 
@@ -306,4 +305,52 @@ function factoring004_init_gateway_class() {
             }
         }
     }
+}
+
+// добавление графика платежей
+add_action('woocommerce_after_checkout_form', 'add_payment_schedule');
+function add_payment_schedule() {
+    ?>
+    <script src="<?php echo get_template_directory_uri(); ?>/assets/js/index.js"></script>
+    <div id="factoring004-schedule" style="display: none; padding: 24px"></div>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            let totalAmount = <?php echo WC()->cart->get_total('edit'); ?>; // сумма заказа
+
+            const schedule = new Factoring004.PaymentSchedule({
+                elemId: "factoring004-schedule",
+                totalAmount,
+            }); // инициализация графика
+
+            schedule.render(); // отрисовка графика
+
+            const factoringSchedule = document.getElementById('factoring004-schedule');
+            const paymentMethodsContainer = document.querySelector('.wc_payment_methods');
+
+            if (!factoringSchedule || !paymentMethodsContainer) {
+                console.error('Missing required elements for payment method detection.');
+                return;
+            }
+
+            // Проверка выбранного метода оплаты
+            function checkSelectedPaymentMethod() {
+                const selectedMethod = document.querySelector('.wc_payment_methods input[name="payment_method"]:checked');
+
+                if (selectedMethod && selectedMethod.value === 'factoring004') {
+                    factoringSchedule.style.display = 'block';
+                } else {
+                    factoringSchedule.style.display = 'none';
+                }
+            }
+
+            // Используем jQuery для отслеживания события change
+            jQuery('body').on('change', 'input[name="payment_method"]', function () {
+                checkSelectedPaymentMethod();
+            });
+
+            // Проверяем выбранный метод оплаты при загрузке страницы
+            checkSelectedPaymentMethod();
+        });
+    </script>
+    <?php
 }
